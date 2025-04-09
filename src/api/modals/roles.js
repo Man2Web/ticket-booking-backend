@@ -1,4 +1,4 @@
-const { DataTypes, NOW, Sequelize } = require("sequelize");
+const { DataTypes, Sequelize } = require("sequelize");
 const { sequelize } = require("../config/db.config");
 
 const Role = sequelize.define(

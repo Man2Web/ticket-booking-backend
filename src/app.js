@@ -2,6 +2,8 @@ const express = require("express");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
+const multer = require("multer");
+const fileUpload = require("express-fileupload");
 
 require("dotenv").config();
 
@@ -10,6 +12,8 @@ const middlewares = require("./middlewares");
 const api = require("./api");
 const authRoutes = require("./api/routes/authRoutes");
 const serviceRoutes = require("./api/routes/serviceRoutes");
+const eventRoutes = require("./api/routes/eventRoutes");
+const dbAssociations = require("./api/config/db.associationsConfig");
 
 const app = express();
 
@@ -17,9 +21,11 @@ app.use(morgan("dev"));
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+app.use(fileUpload());
 
 app.use("/auth", authRoutes);
 app.use("/services", serviceRoutes);
+app.use("/event", eventRoutes);
 
 app.get("/", (req, res) => {
   res.json({
@@ -38,6 +44,8 @@ sequelize
 sequelize.sync({ force: false }).then(() => {
   console.log("Database synced");
 });
+
+dbAssociations();
 
 client
   .connect()

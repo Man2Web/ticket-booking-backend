@@ -4,71 +4,119 @@ const jwt = require("jsonwebtoken");
 const { Op } = require("sequelize");
 
 const generateOtp = async (req, res) => {
-  const existingOtp = await Otp.findOne({
-    where: {
-      userId: req.user.userId,
-      expiresAt: {
-        [Op.gt]: new Date(),
+  try {
+    const existingOtp = await Otp.findOne({
+      where: {
+        userId: req.user.userId,
+        expiresAt: {
+          [Op.gt]: new Date(),
+        },
+        isUsed: false,
       },
-      isUsed: false,
-    },
-  });
-  if (existingOtp) {
-    return res.status(200).json({
-      message: "Existing OTP Sent",
-      otp: existingOtp.otp,
     });
+    if (existingOtp) {
+      return res.status(200).json({
+        message: "Existing OTP Sent",
+        otp: existingOtp.otp,
+      });
+    }
+
+    const expiresAt = new Date().setMinutes(new Date().getMinutes() + 5);
+    const otp = otpGenerator.generate(4, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    await Otp.create({
+      userId: req.user.userId,
+      otp: otp,
+      expiresAt: expiresAt,
+    });
+
+    res.status(200).json({
+      message: "OTP Generated",
+      otp: otp,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
   }
-
-  const expiresAt = new Date().setMinutes(new Date().getMinutes() + 5);
-  const otp = otpGenerator.generate(4, {
-    upperCaseAlphabets: false,
-    lowerCaseAlphabets: false,
-    specialChars: false,
-  });
-
-  await Otp.create({
-    userId: req.user.userId,
-    otp: otp,
-    expiresAt: expiresAt,
-  });
-
-  res.status(200).json({
-    message: "OTP Generated",
-    otp: otp,
-  });
 };
 
 const validateOtp = async (req, res) => {
-  const { phone, otp } = req.body;
-  if (!phone || !otp)
-    return res
-      .status(400)
-      .json({ message: "Phone Number and Otp is Required" });
+  try {
+    const { phone, otp } = req.body;
+    if (!phone || !otp)
+      return res
+        .status(400)
+        .json({ message: "Phone Number and Otp is Required" });
 
-  const otpData = await Otp.findOne({
-    where: {
-      userId: req.user.userId,
-      otp: String(otp),
-      isUsed: false,
-    },
-  });
-  if (!otpData) return res.status(404).json({ message: "Invalid OTP" });
+    const otpData = await Otp.findOne({
+      where: {
+        userId: req.user.userId,
+        otp: String(otp),
+        isUsed: false,
+      },
+    });
+    if (!otpData) return res.status(404).json({ message: "Invalid OTP" });
 
-  const otpExpired =
-    new Date().getTime() < new Date(otpData.expiresAt).getTime();
+    const otpExpired =
+      new Date().getTime() < new Date(otpData.expiresAt).getTime();
 
-  if (!otpExpired) return res.status(400).json({ message: "OTP Expired" });
+    if (!otpExpired) return res.status(400).json({ message: "OTP Expired" });
 
-  const jwtSecret = process.env.JWT_SECRET;
+    const jwtSecret = process.env.JWT_SECRET;
 
-  const token = jwt.sign({ ...req.user.dataValues }, jwtSecret, {
-    expiresIn: "24h",
-  });
+    const access_token = jwt.sign(
+      {
+        userId: req.user.dataValues.userId,
+        userRoleId: req.user.dataValues.userRoleId,
+        phone: req.user.dataValues.phone,
+      },
+      jwtSecret,
+      {
+        expiresIn: "1h",
+      }
+    );
 
-  res.json({
-    token,
-  });
+    const refresh_token = jwt.sign({ ...req.user.dataValues }, jwtSecret, {
+      expiresIn: "30d",
+    });
+
+    res.status(200).json({
+      message: "User Authenticated",
+      access_token,
+      refresh_token,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
 };
 
-module.exports = { generateOtp, validateOtp };
+const generateRefreshToken = async (req, res) => {
+  try {
+    const refresh_token = req.headers.authorization.split(" ")[1];
+    if (!refresh_token)
+      return res.status(401).json({ message: "No refresh token provided" });
+    const user = jwt.decode(refresh_token, process.env.JWT_SECRET);
+    if (user.exp < Date.now() / 1000)
+      return res.status(401).json({ message: "Refresh token has expired" });
+    const token = jwt.sign(
+      { userId: user.userId, userRoleId: user.userRoleId, phone: user.phone },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+    return res
+      .status(200)
+      .json({ message: "Token retrieval success", access_token: token });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { generateOtp, validateOtp, generateRefreshToken };

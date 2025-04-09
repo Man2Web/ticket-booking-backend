@@ -29,16 +29,16 @@ const User = sequelize.define(
       unique: true,
       field: "phone",
     },
-    userRoleId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: "user_role_id",
-      references: {
-        model: "user_roles",
-        key: "user_role_id",
-      },
-      onDelete: "SET NULL",
-    },
+    // userRoleId: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: true,
+    //   field: "user_role_id",
+    //   references: {
+    //     model: "user_roles",
+    //     key: "user_role_id",
+    //   },
+    //   onDelete: "SET NULL",
+    // },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,

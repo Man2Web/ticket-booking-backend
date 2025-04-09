@@ -1,5 +1,7 @@
 const { DataTypes, Sequelize } = require("sequelize");
 const { sequelize } = require("../config/db.config");
+const Role = require("./roles");
+const User = require("./users");
 
 const UserRole = sequelize.define(
   "UserRole",
@@ -18,6 +20,7 @@ const UserRole = sequelize.define(
         key: "user_id",
       },
       field: "user_id",
+      onDelete: "CASCADE",
     },
     roleId: {
       type: DataTypes.INTEGER,
@@ -26,6 +29,8 @@ const UserRole = sequelize.define(
         model: "roles",
         key: "role_id",
       },
+      field: "role_id",
+      onDelete: "CASCADE",
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -45,5 +50,15 @@ const UserRole = sequelize.define(
     timestamps: true,
   }
 );
+
+UserRole.belongsTo(Role, {
+  foreignKey: "roleId",
+  targetKey: "roleId",
+});
+
+UserRole.belongsTo(User, {
+  foreignKey: "userId",
+  targetKey: "userId",
+});
 
 module.exports = UserRole;
