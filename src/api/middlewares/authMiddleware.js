@@ -14,15 +14,15 @@ async function checkIfUserExists(req, res, next) {
 
     const phoneString = String(phone);
 
-    let user = await User.findOne({
+    let user = await User.findOrCreate({
       where: { phone: phoneString },
     });
 
-    if (!user) {
-      user = await createUser(phone);
-    }
+    // if (!user) {
+    //   user = await createUser(phone);
+    // }
 
-    req.user = user;
+    req.user = user[0].dataValues;
 
     next();
   } catch (error) {

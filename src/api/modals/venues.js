@@ -8,6 +8,7 @@ const Venue = sequelize.define(
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
+      field: "venue_id",
     },
     name: {
       type: DataTypes.STRING(100),

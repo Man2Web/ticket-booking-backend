@@ -70,9 +70,9 @@ const validateOtp = async (req, res) => {
 
     const access_token = jwt.sign(
       {
-        userId: req.user.dataValues.userId,
-        userRoleId: req.user.dataValues.userRoleId,
-        phone: req.user.dataValues.phone,
+        userId: req.user.userId,
+        userRoleId: req.user.userRoleId,
+        phone: req.user.phone,
       },
       jwtSecret,
       {
@@ -80,7 +80,7 @@ const validateOtp = async (req, res) => {
       }
     );
 
-    const refresh_token = jwt.sign({ ...req.user.dataValues }, jwtSecret, {
+    const refresh_token = jwt.sign({ ...req.user }, jwtSecret, {
       expiresIn: "30d",
     });
 
