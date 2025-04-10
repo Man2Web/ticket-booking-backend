@@ -56,10 +56,10 @@ const Event = sequelize.define(
       allowNull: false,
       field: "booking_date",
     },
-    type: {
-      type: DataTypes.STRING(100),
+    isOnline: {
+      type: DataTypes.BOOLEAN,
       allowNull: false,
-      field: "type",
+      field: "is_online",
     },
     category: {
       type: DataTypes.STRING(100),
@@ -77,7 +77,7 @@ const Event = sequelize.define(
       field: "faq",
     },
     termsAndConditions: {
-      type: DataTypes.JSONB(),
+      type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: false,
       field: "terms_and_conditions",
     },

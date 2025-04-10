@@ -1,3 +1,5 @@
+const Event = require("../modals/events");
+
 const validateEvent = (req, res, next) => {
   try {
     const {
@@ -7,10 +9,18 @@ const validateEvent = (req, res, next) => {
       startDate,
       endDate,
       category,
-      type,
+      isOnline,
       faq,
       termsAndConditions,
     } = req.body;
+    const {
+      name: venueName,
+      address,
+      city,
+      state,
+      zip,
+      country,
+    } = JSON.parse(JSON.parse(req.body.venueDetails));
     const images = req.files;
     if (
       !name ||
@@ -20,8 +30,15 @@ const validateEvent = (req, res, next) => {
       !endDate ||
       !category ||
       !termsAndConditions ||
-      !type ||
-      !faq
+      !isOnline ||
+      !faq ||
+      faq.length === 0 ||
+      !venueName ||
+      !address ||
+      !city ||
+      !state ||
+      !zip ||
+      !country
     )
       return res
         .status(401)
@@ -36,4 +53,28 @@ const validateEvent = (req, res, next) => {
   }
 };
 
-module.exports = { validateEvent };
+const isEventOwner = async (req, res, next) => {
+  try {
+    const eventId = req.body.eventId;
+    if (!eventId)
+      return res.status(401).json({ message: "Event Parameter is missing" });
+    const eventDetails = await Event.findOne({
+      where: {
+        eventId,
+        adminId: req.user.userId,
+      },
+      attributes: ["eventId", "adminId", "name", "images"],
+    });
+    if (!eventDetails)
+      return res
+        .status(403)
+        .json({ message: "Event does not belong to admin" });
+    req.eventDetails = eventDetails.dataValues;
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.status(401).json({ message: error.message });
+  }
+};
+
+module.exports = { validateEvent, isEventOwner };

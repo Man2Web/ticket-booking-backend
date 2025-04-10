@@ -11,10 +11,10 @@ const sequelize = new Sequelize(
     timezone: "+05:30",
     dialectOptions: {
       useUTC: false,
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
+      // ssl: {
+      //   require: false,
+      //   rejectUnauthorized: false,
+      // },
     },
   }
 );
@@ -25,10 +25,10 @@ const client = new Client({
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
-  ssl: {
-    require: true,
-    rejectUnauthorized: false,
-  },
+  // ssl: {
+  //   require: false,
+  //   rejectUnauthorized: false,
+  // },
 });
 
 module.exports = { client, sequelize };

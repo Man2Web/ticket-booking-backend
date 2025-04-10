@@ -2,8 +2,6 @@ const express = require("express");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
-// const multer = require("multer");
-const fileUpload = require("express-fileupload");
 
 require("dotenv").config();
 
@@ -21,7 +19,6 @@ app.use(morgan("dev"));
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
-app.use(fileUpload());
 
 app.use("/auth", authRoutes);
 app.use("/services", serviceRoutes);
