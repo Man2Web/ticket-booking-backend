@@ -63,7 +63,7 @@ const isEventOwner = async (req, res, next) => {
         eventId,
         adminId: req.user.userId,
       },
-      attributes: ["eventId", "adminId", "name", "images"],
+      attributes: ["eventId", "adminId", "name", "images", "venueId"],
     });
     if (!eventDetails)
       return res
