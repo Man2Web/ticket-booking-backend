@@ -11,7 +11,9 @@ const api = require("./api");
 const authRoutes = require("./api/routes/authRoutes");
 const serviceRoutes = require("./api/routes/serviceRoutes");
 const eventRoutes = require("./api/routes/eventRoutes");
+const eventRolesRoutes = require("./api/routes/eventRolesRoutes");
 const dbAssociations = require("./api/config/db.associationsConfig");
+const initializeDbConfig = require("./api/config/db.initializeConfig");
 
 const app = express();
 
@@ -23,6 +25,7 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/services", serviceRoutes);
 app.use("/event", eventRoutes);
+app.use("/event-roles", eventRolesRoutes);
 
 app.get("/", (req, res) => {
   res.json({
@@ -32,24 +35,16 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1", api);
 
-sequelize
-  .authenticate()
-  .then(() => console.log("Sequelize Connected to DB"))
-  .catch((error) =>
-    console.error("Error Connecting to Database" + error.message)
-  );
-sequelize.sync({ force: false }).then(() => {
-  console.log("Database synced");
-});
+const initializeDB = async () => {
+  try {
+    await initializeDbConfig();
+    await client.connect();
+  } catch (error) {
+    console.error("Error to intialize DB:", error);
+  }
+};
 
-dbAssociations();
-
-client
-  .connect()
-  .then(() => console.log("Connected to DB"))
-  .catch((error) =>
-    console.error("Error Connecting to Database" + error.message)
-  );
+initializeDB();
 
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);

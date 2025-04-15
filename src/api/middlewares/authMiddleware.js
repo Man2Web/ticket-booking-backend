@@ -1,7 +1,6 @@
 const Role = require("../modals/roles");
 const UserRole = require("../modals/userRoles");
 const User = require("../modals/users");
-const { createUser } = require("../services/userServices");
 const jwt = require("jsonwebtoken");
 
 async function checkIfUserExists(req, res, next) {
@@ -14,13 +13,20 @@ async function checkIfUserExists(req, res, next) {
 
     const phoneString = String(phone);
 
-    let user = await User.findOrCreate({
+    const user = await User.findOrCreate({
       where: { phone: phoneString },
     });
 
-    // if (!user) {
-    //   user = await createUser(phone);
-    // }
+    const role = await Role.findOne({
+      where: { roleName: "USER" },
+    });
+
+    await UserRole.findOrCreate({
+      where: {
+        userId: user[0].dataValues.userId,
+        roleId: role.dataValues.roleId,
+      },
+    });
 
     req.user = user[0].dataValues;
 
@@ -39,7 +45,7 @@ async function validateUserIsAdmin(req, res, next) {
     if (user.exp < Date.now() / 1000) {
       return res.status(401).json({ message: "Token Expired" });
     }
-    const isAdmin = await UserRole.findAll({
+    const isAdmin = await UserRole.findOne({
       where: {
         userId: user.userId,
       },
@@ -47,14 +53,22 @@ async function validateUserIsAdmin(req, res, next) {
         {
           model: Role,
           where: {
-            roleName: "admin",
+            roleName: "ADMIN",
           },
+        },
+        {
+          model: User,
         },
       ],
     });
-    if (isAdmin.length === 0)
+    if (
+      !isAdmin ||
+      !isAdmin.dataValues ||
+      !isAdmin.dataValues.User ||
+      !isAdmin.dataValues.Role
+    )
       return res.status(401).json({ message: "User is not admin" });
-    req.user = user;
+    req.user = isAdmin.dataValues.User.dataValues;
     next();
   } catch (error) {
     console.error(error);

@@ -3,12 +3,12 @@ const UserRole = require("../modals/userRoles");
 const User = require("../modals/users");
 const Venue = require("../modals/venues");
 const Event = require("../modals/events");
+const EventUserRole = require("../modals/eventUserRoles");
 
 const dbAssociations = () => {
-  // User-Role associations
   UserRole.belongsTo(Role, {
     foreignKey: "roleId",
-    targetKey: "roleId", // Fixed: changed belongsTo to targetKey
+    targetKey: "roleId",
   });
 
   Role.hasMany(UserRole, {
@@ -26,7 +26,6 @@ const dbAssociations = () => {
     as: "userRoles",
   });
 
-  // Event-Venue associations
   Event.belongsTo(Venue, {
     foreignKey: "venueId",
     as: "venue",
@@ -37,16 +36,30 @@ const dbAssociations = () => {
     as: "events",
   });
 
-  // Event-User (Admin) associations
   Event.belongsTo(User, {
     foreignKey: "adminId",
-    targetKey: "userId", // Fixed: changed belongsTo to targetKey
+    targetKey: "userId",
     as: "admin",
   });
 
   User.hasMany(Event, {
     foreignKey: "adminId",
     as: "adminEvents",
+  });
+
+  EventUserRole.belongsTo(User, {
+    foreignKey: "userId",
+    targetKey: "userId",
+  });
+
+  EventUserRole.belongsTo(Event, {
+    foreignKey: "eventId",
+    targetKey: "eventId",
+  });
+
+  EventUserRole.belongsTo(Role, {
+    foreignKey: "roleId",
+    targetKey: "roleId",
   });
 };
 

@@ -14,6 +14,7 @@ const Role = sequelize.define(
       type: DataTypes.STRING,
       field: "role_name",
       allowNull: false,
+      unique: true,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -31,6 +32,7 @@ const Role = sequelize.define(
   {
     tableName: "roles",
     timestamps: true,
+    underscored: true,
   }
 );
 

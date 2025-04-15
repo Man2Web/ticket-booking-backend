@@ -77,7 +77,7 @@ const Event = sequelize.define(
       field: "faq",
     },
     termsAndConditions: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
+      type: DataTypes.ARRAY(DataTypes.TEXT),
       allowNull: false,
       field: "terms_and_conditions",
     },

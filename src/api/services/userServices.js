@@ -7,7 +7,7 @@ const createUser = async (phone) => {
   try {
     const role = await Role.findOne({
       where: {
-        roleName: "user",
+        roleName: "USER",
       },
     });
 
