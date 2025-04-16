@@ -15,7 +15,7 @@ router.use(validateUserIsAdmin);
 router.route("/create").post(upload.array("images"), validateEvent, addEvent);
 
 router
-  .route("/edit")
+  .route("/:eventId/edit")
   .post(upload.array("images"), validateEvent, isEventOwner, editEvent);
 
 module.exports = router;

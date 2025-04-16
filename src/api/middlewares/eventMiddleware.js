@@ -41,7 +41,7 @@ const validateEvent = (req, res, next) => {
       !country
     )
       return res
-        .status(401)
+        .status(403)
         .json({ message: "Required Parameters Are Missing" });
 
     if (!images || images.length <= 0)
@@ -55,9 +55,9 @@ const validateEvent = (req, res, next) => {
 
 const isEventOwner = async (req, res, next) => {
   try {
-    const eventId = req.body.eventId;
+    const { eventId } = req.params;
     if (!eventId)
-      return res.status(401).json({ message: "Event Parameter is missing" });
+      return res.status(401).json({ message: "Event ID Is Missing" });
     const eventDetails = await Event.findOne({
       where: {
         eventId,

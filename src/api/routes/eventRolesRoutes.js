@@ -3,20 +3,20 @@ const router = express.Router();
 const { validateUserIsAdmin } = require("../middlewares/authMiddleware");
 const { isEventOwner } = require("../middlewares/eventMiddleware");
 const {
-  assignRole,
-  getRoles,
-  acceptRole,
-  removeRole,
+  acceptInvitation,
+  getAvailableRoles,
+  assignStaff,
+  removeStaff,
 } = require("../controllers/eventRolesController");
 
-router.route("/invitations/accept").get(acceptRole);
+router.route("/invitations/:token").get(acceptInvitation);
 
 router.use(validateUserIsAdmin);
 
-router.route("/available").get(getRoles);
+router.route("/roles").get(getAvailableRoles);
 
-router.route("/assign").post(isEventOwner, assignRole);
+router.route("/:eventId/staff").post(isEventOwner, assignStaff);
 
-router.route("/remove").post(isEventOwner, removeRole);
+router.route("/:eventId/staff/:userRoleId").delete(isEventOwner, removeStaff);
 
 module.exports = router;

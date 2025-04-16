@@ -12,7 +12,8 @@ const authRoutes = require("./api/routes/authRoutes");
 const serviceRoutes = require("./api/routes/serviceRoutes");
 const eventRoutes = require("./api/routes/eventRoutes");
 const eventRolesRoutes = require("./api/routes/eventRolesRoutes");
-const dbAssociations = require("./api/config/db.associationsConfig");
+const ticketRoutes = require("./api/routes/ticketRoutes");
+// const dbAssociations = require("./api/config/db.associationsConfig");
 const initializeDbConfig = require("./api/config/db.initializeConfig");
 
 const app = express();
@@ -23,9 +24,10 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/auth", authRoutes);
+app.use("/events/:eventId/tickets", ticketRoutes);
+app.use("/events", eventRoutes);
+app.use("/event-staff", eventRolesRoutes);
 app.use("/services", serviceRoutes);
-app.use("/event", eventRoutes);
-app.use("/event-roles", eventRolesRoutes);
 
 app.get("/", (req, res) => {
   res.json({

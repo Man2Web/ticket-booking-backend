@@ -1,55 +1,56 @@
 const { DataTypes, Sequelize } = require("sequelize");
 const { sequelize } = require("../config/db.config");
 
-const EventUserRole = sequelize.define(
-  "EventUserRole",
+const Ticket = sequelize.define(
+  "Ticket",
   {
-    eventUserId: {
+    ticketId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      field: "event_user_id",
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "users",
-        key: "user_id",
-      },
-      field: "user_id",
-      onDelete: "CASCADE",
-    },
-    roleId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "roles",
-        key: "role_id",
-      },
-      field: "role_id",
-      onDelete: "CASCADE",
+      field: "ticket_id",
     },
     eventId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       references: {
         model: "events",
         key: "event_id",
       },
-      field: "event_id",
-      onDelete: "CASCADE",
-    },
-    invitationToken: {
-      type: DataTypes.STRING(100),
-      unique: true,
       allowNull: false,
-      field: "invitation_token",
+      onDelete: "CASCADE",
+      field: "event_id",
     },
-    accepted: {
+    ticketName: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      field: "ticket_name",
+    },
+    price: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      field: "price",
+    },
+    keyPoints: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false,
+      field: "key_points",
+    },
+    availableQuantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      field: "available_quantity",
+    },
+    soldQuantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      field: "sold_quantity",
+    },
+    isActive: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      field: "accepted",
+      allowNull: false,
+      defaultValue: true,
+      field: "is_active",
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -65,9 +66,9 @@ const EventUserRole = sequelize.define(
     },
   },
   {
-    tableName: "event_user_roles",
     timestamps: true,
+    tableName: "tickets",
   }
 );
 
-module.exports = EventUserRole;
+module.exports = Ticket;

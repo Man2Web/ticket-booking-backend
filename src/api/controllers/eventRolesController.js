@@ -2,8 +2,9 @@ const { Op } = require("sequelize");
 const Role = require("../modals/roles");
 const User = require("../modals/users");
 const EventUserRole = require("../modals/eventUserRoles");
+const { nanoid } = require("nanoid");
 
-const getRoles = async (req, res) => {
+const getAvailableRoles = async (req, res) => {
   try {
     const roles = await Role.findAll({
       attributes: ["roleId", "roleName"],
@@ -26,9 +27,10 @@ const getRoles = async (req, res) => {
   }
 };
 
-const assignRole = async (req, res) => {
+const assignStaff = async (req, res) => {
   try {
-    const { eventId, userPhone, roleId } = req.body;
+    const { eventId } = req.params;
+    const { userPhone, roleId } = req.body;
     if (!eventId || !userPhone || !roleId) {
       return res.status(400).json({
         message: "Required Parameters Missing",
@@ -48,13 +50,15 @@ const assignRole = async (req, res) => {
     if (!roleExists)
       return res.status(404).json({ message: "Role Does Not Exist" });
 
+    const token = nanoid();
+
     await EventUserRole.create({
       userId: userExists.dataValues.userId,
       roleId,
       eventId,
+      invitationToken: token,
     });
-
-    const magicLink = `http://${process.env.URL}/event-roles/invitations/accept?eventId=${eventId}&roleId=${roleId}&userId=${userExists.dataValues.userId}`;
+    const magicLink = `http://${process.env.URL}/event-staff/invitations/${token}`;
 
     return res
       .status(200)
@@ -65,14 +69,14 @@ const assignRole = async (req, res) => {
   }
 };
 
-const acceptRole = async (req, res) => {
+const acceptInvitation = async (req, res) => {
   try {
-    const { eventId, userId, roleId } = req.query;
-    if (!eventId || !userId || !roleId)
+    const { token } = req.params;
+    if (!token)
       return res.status(400).json({ message: "Missing Required Parameters" });
 
     const existingRole = await EventUserRole.findOne({
-      where: { eventId, userId, roleId, accepted: true },
+      where: { invitationToken: token, accepted: true },
     });
 
     if (existingRole)
@@ -82,9 +86,7 @@ const acceptRole = async (req, res) => {
       { accepted: true },
       {
         where: {
-          eventId,
-          userId,
-          roleId,
+          invitationToken: token,
         },
       }
     );
@@ -96,17 +98,17 @@ const acceptRole = async (req, res) => {
   }
 };
 
-const removeRole = async (req, res) => {
+const removeStaff = async (req, res) => {
   try {
-    const { eventId, roleId } = req.body;
+    const { eventId, userRoleId } = req.params;
 
-    if (!eventId || !roleId) {
+    if (!eventId || !userRoleId) {
       return res.status(400).json({
         message: "Required Parameters Missing",
       });
     }
 
-    const roleAssignment = await EventUserRole.findByPk(roleId);
+    const roleAssignment = await EventUserRole.findByPk(userRoleId);
 
     if (!roleAssignment)
       return res.status(404).json({ message: "Role assignment not found" });
@@ -120,4 +122,9 @@ const removeRole = async (req, res) => {
   }
 };
 
-module.exports = { assignRole, getRoles, acceptRole, removeRole };
+module.exports = {
+  assignStaff,
+  getAvailableRoles,
+  acceptInvitation,
+  removeStaff,
+};
