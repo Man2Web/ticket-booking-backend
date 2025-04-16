@@ -5,6 +5,7 @@ const Venue = require("../modals/venues");
 const Event = require("../modals/events");
 const EventUserRole = require("../modals/eventUserRoles");
 const Ticket = require("../modals/tickets");
+const Coupon = require("../modals/coupons");
 
 const dbAssociations = () => {
   UserRole.belongsTo(Role, {
@@ -66,6 +67,16 @@ const dbAssociations = () => {
   Ticket.belongsTo(Event, {
     foreignKey: "eventId",
     targetKey: "eventId",
+  });
+
+  Coupon.belongsTo(Event, {
+    foreignKey: "eventId",
+    targetKey: "eventId",
+  });
+
+  Coupon.belongsTo(Ticket, {
+    foreignKey: "ticketId",
+    targetKey: "ticketId",
   });
 };
 

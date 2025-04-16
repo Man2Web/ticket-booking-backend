@@ -13,6 +13,7 @@ const serviceRoutes = require("./api/routes/serviceRoutes");
 const eventRoutes = require("./api/routes/eventRoutes");
 const eventRolesRoutes = require("./api/routes/eventRolesRoutes");
 const ticketRoutes = require("./api/routes/ticketRoutes");
+const couponRoutes = require("./api/routes/couponRoutes");
 // const dbAssociations = require("./api/config/db.associationsConfig");
 const initializeDbConfig = require("./api/config/db.initializeConfig");
 
@@ -25,6 +26,7 @@ app.use(express.json());
 
 app.use("/auth", authRoutes);
 app.use("/events/:eventId/tickets", ticketRoutes);
+app.use("/events/:eventId/coupons", couponRoutes);
 app.use("/events", eventRoutes);
 app.use("/event-staff", eventRolesRoutes);
 app.use("/services", serviceRoutes);
