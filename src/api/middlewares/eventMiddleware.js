@@ -21,7 +21,9 @@ const validateEvent = (req, res, next) => {
       zip,
       country,
     } = JSON.parse(JSON.parse(req.body.venueDetails));
-    const images = req.files;
+    const galleryImages = req.files.galleryImages;
+    const mainImage = req.files.mainImage[0];
+    const bannerImage = req.files.bannerImage[0];
     if (
       !name ||
       !description ||
@@ -44,7 +46,12 @@ const validateEvent = (req, res, next) => {
         .status(403)
         .json({ message: "Required Parameters Are Missing" });
 
-    if (!images || images.length <= 0)
+    if (
+      !galleryImages ||
+      galleryImages.length <= 0 ||
+      !mainImage ||
+      !bannerImage
+    )
       return res.status(401).json({ message: "Event Images are missing" });
     next();
   } catch (error) {
@@ -63,7 +70,15 @@ const isEventOwner = async (req, res, next) => {
         eventId,
         adminId: req.user.userId,
       },
-      attributes: ["eventId", "adminId", "name", "images", "venueId"],
+      attributes: [
+        "eventId",
+        "adminId",
+        "name",
+        "galleryImages",
+        "mainImage",
+        "bannerImage",
+        "venueId",
+      ],
     });
     if (!eventDetails)
       return res

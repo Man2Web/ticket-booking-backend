@@ -1,4 +1,4 @@
-const clearExpiredOtps = require("../services/cleanOtp");
+const { clearExpiredOtps } = require("../services/authServices");
 
 const cleanOtpHandler = async (req, res) => {
   try {

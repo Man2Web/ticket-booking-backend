@@ -1,12 +1,11 @@
+const sharp = require("sharp");
+const { sequelize } = require("../config/db.config");
 const {
   S3Client,
   PutObjectCommand,
-  DeleteObjectsCommand,
   DeleteObjectCommand,
 } = require("@aws-sdk/client-s3");
 const Event = require("../modals/events");
-const sharp = require("sharp");
-const { sequelize } = require("../config/db.config");
 const Venue = require("../modals/venues");
 
 const addEvent = async (req, res) => {
@@ -32,7 +31,11 @@ const addEvent = async (req, res) => {
       country,
     } = JSON.parse(JSON.parse(req.body.venueDetails));
 
-    const files = req.files;
+    const files = [
+      ...req.files.galleryImages,
+      ...req.files.mainImage,
+      ...req.files.bannerImage,
+    ];
 
     const s3 = new S3Client({
       region: process.env.S3_REGION,
@@ -43,8 +46,10 @@ const addEvent = async (req, res) => {
     });
 
     const uploadedImages = [];
+    let mainImage = "";
+    let bannerImage = "";
     for (const file of files) {
-      const uniqueFileName = `${Date.now()}-${
+      const uniqueFileName = `${req.user.userId}/${Date.now()}-${
         file.originalname.split(".")[0]
       }.webp`;
       const uploadParams = {
@@ -55,7 +60,12 @@ const addEvent = async (req, res) => {
       };
 
       await s3.send(new PutObjectCommand(uploadParams));
-      uploadedImages.push(uniqueFileName);
+      if (file.fieldname === "mainImage") {
+        mainImage = uniqueFileName;
+      } else if (file.fieldname === "bannerImage") bannerImage = uniqueFileName;
+      else {
+        uploadedImages.push(uniqueFileName);
+      }
     }
 
     sequelize
@@ -79,7 +89,9 @@ const addEvent = async (req, res) => {
           bookingDate,
           isOnline,
           category,
-          images: uploadedImages,
+          galleryImages: uploadedImages,
+          mainImage: mainImage,
+          bannerImage: bannerImage,
           faq: JSON.parse(JSON.parse(faq)),
           termsAndConditions: Array(termsAndConditions),
         });
@@ -119,12 +131,19 @@ const editEvent = async (req, res) => {
       country,
     } = JSON.parse(JSON.parse(req.body.venueDetails));
 
-    const { adminId, eventId, images, venueId } = req.eventDetails;
+    const { adminId, eventId, galleryImages, bannerImage, mainImage, venueId } =
+      req.eventDetails;
 
-    const files = req.files;
+    const prevFiles = [...galleryImages, bannerImage, mainImage];
+
+    const files = [
+      ...req.files.galleryImages,
+      ...req.files.mainImage,
+      ...req.files.bannerImage,
+    ];
 
     const prevImages = [];
-    for (const image of images) {
+    for (const image of prevFiles) {
       const timestamp = `${image.split("-")[0]}-`;
       const imageNameWithoutTimestamp = image
         .replace(new RegExp(timestamp, "gi"), "")
@@ -148,9 +167,11 @@ const editEvent = async (req, res) => {
 
     const deletedImages = [];
     const uploadedImages = [];
+    let mainImageFileName = "";
+    let bannerImageFileName = "";
 
     for (const [image, count] of imagesCount) {
-      for (const prevImage of images) {
+      for (const prevImage of prevFiles) {
         const timestamp = `${prevImage.split("-")[0]}-`;
         const imageNameWithoutTimestamp = prevImage
           .replace(new RegExp(timestamp, "gi"), "")
@@ -186,7 +207,7 @@ const editEvent = async (req, res) => {
         (data) => data.originalname.split(".")[0] === image
       )[0];
 
-      const uniqueFileName = `${Date.now()}-${
+      const uniqueFileName = `${req.user.userId}/${Date.now()}-${
         file.originalname.split(".")[0]
       }.webp`;
 
@@ -198,7 +219,13 @@ const editEvent = async (req, res) => {
       };
 
       await s3.send(new PutObjectCommand(uploadParams));
-      uploadedImages.push(uniqueFileName);
+      if (file.fieldname === "mainImage") {
+        mainImageFileName = uniqueFileName;
+      } else if (file.fieldname === "bannerImage")
+        bannerImageFileName = uniqueFileName;
+      else {
+        uploadedImages.push(uniqueFileName);
+      }
     }
     sequelize
       .transaction(async () => {
@@ -227,7 +254,9 @@ const editEvent = async (req, res) => {
             bookingDate,
             isOnline,
             category,
-            images: uploadedImages,
+            galleryImages: uploadedImages,
+            mainImage: mainImageFileName,
+            bannerImage: bannerImageFileName,
             faq: JSON.parse(JSON.parse(faq)),
             termsAndConditions: Array(termsAndConditions),
           },
@@ -251,4 +280,16 @@ const editEvent = async (req, res) => {
   }
 };
 
-module.exports = { addEvent, editEvent };
+const getEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const eventData = await Event.findByPk(eventId);
+    if (!eventData) return res.status(404).json({ message: "Invalid Event" });
+    return res.status(200).json({ eventData: eventData });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { addEvent, editEvent, getEvent };

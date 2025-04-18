@@ -1,5 +1,5 @@
 const cron = require("node-cron");
-const clearExpiredOtps = require("../services/cleanOtp");
+const { clearExpiredOtps } = require("../services/authServices");
 
 cron.schedule("*/5 * * * *", async () => {
   try {

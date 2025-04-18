@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const { addEvent, editEvent } = require("../controllers/eventController");
+const {
+  addEvent,
+  editEvent,
+  getEvent,
+} = require("../controllers/eventController");
 const { validateUserIsAdmin } = require("../middlewares/authMiddleware");
 const {
   validateEvent,
@@ -10,12 +14,29 @@ const {
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+router.route("/:eventId").get(getEvent);
+
 router.use(validateUserIsAdmin);
 
-router.route("/create").post(upload.array("images"), validateEvent, addEvent);
+router.route("/create").post(
+  upload.fields([
+    { name: "galleryImages", maxCount: 5 },
+    { name: "mainImage", maxCount: 1 },
+    { name: "bannerImage", maxCount: 1 },
+  ]),
+  validateEvent,
+  addEvent
+);
 
-router
-  .route("/:eventId/edit")
-  .post(upload.array("images"), validateEvent, isEventOwner, editEvent);
+router.route("/:eventId/edit").post(
+  upload.fields([
+    { name: "galleryImages", maxCount: 5 },
+    { name: "mainImage", maxCount: 1 },
+    { name: "bannerImage", maxCount: 1 },
+  ]),
+  validateEvent,
+  isEventOwner,
+  editEvent
+);
 
 module.exports = router;

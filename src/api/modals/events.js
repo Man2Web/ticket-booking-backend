@@ -66,10 +66,21 @@ const Event = sequelize.define(
       allowNull: false,
       field: "category",
     },
-    images: {
-      type: DataTypes.ARRAY(DataTypes.TEXT),
+    bannerImage: {
+      type: DataTypes.TEXT,
       allowNull: false,
-      field: "images",
+      field: "banner_image",
+    },
+    mainImage: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      field: "main_image",
+    },
+    galleryImages: {
+      type: DataTypes.ARRAY(DataTypes.TEXT),
+      allowNull: true, // Make it optional
+      defaultValue: [],
+      field: "gallery_images",
     },
     faq: {
       type: DataTypes.JSONB(),

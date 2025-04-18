@@ -2,6 +2,7 @@ const Otp = require("../modals/otps");
 const otpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
 const { Op } = require("sequelize");
+const { sendOtp } = require("../services/authServices");
 
 const generateOtp = async (req, res) => {
   try {
@@ -33,6 +34,8 @@ const generateOtp = async (req, res) => {
       otp: otp,
       expiresAt: expiresAt,
     });
+
+    await sendOtp(req.user.phone, otp);
 
     res.status(200).json({
       message: "OTP Generated",
