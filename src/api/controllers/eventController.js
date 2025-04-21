@@ -7,6 +7,15 @@ const {
 } = require("@aws-sdk/client-s3");
 const Event = require("../modals/events");
 const Venue = require("../modals/venues");
+const { generateS3Key } = require("../services/eventServices");
+
+const s3 = new S3Client({
+  region: process.env.S3_REGION,
+  credentials: {
+    accessKeyId: process.env.S3_USER_ACCESS_ID,
+    secretAccessKey: process.env.S3_USER_SECRET_ACCESS_KEY,
+  },
+});
 
 const addEvent = async (req, res) => {
   try {
@@ -45,28 +54,41 @@ const addEvent = async (req, res) => {
       },
     });
 
-    const uploadedImages = [];
-    let mainImage = "";
-    let bannerImage = "";
-    for (const file of files) {
-      const uniqueFileName = `${req.user.userId}/${Date.now()}-${
-        file.originalname.split(".")[0]
-      }.webp`;
+    const imageUploadPromises = files.map(async (file) => {
+      const fileType =
+        file.fieldname === "mainImage"
+          ? "main"
+          : file.fieldname === "bannerImage"
+          ? "banner"
+          : "gallery";
+
+      const s3Key = generateS3Key(req.user.userId, fileType, file.originalname);
+
       const uploadParams = {
         Bucket: process.env.S3_BUCKET_NAME,
-        Key: uniqueFileName,
+        Key: s3Key,
         Body: await sharp(file.buffer).webp({ quality: 80 }).toBuffer(),
         ContentType: "image/webp",
       };
 
       await s3.send(new PutObjectCommand(uploadParams));
-      if (file.fieldname === "mainImage") {
-        mainImage = uniqueFileName;
-      } else if (file.fieldname === "bannerImage") bannerImage = uniqueFileName;
+      return { type: file.fieldname, key: s3Key };
+    });
+
+    const uploadResult = await Promise.all(imageUploadPromises);
+
+    const uploadedImages = [];
+    let mainImage = "";
+    let bannerImage = "";
+
+    uploadResult.forEach(({ type, key }) => {
+      if (type === "mainImage") {
+        mainImage = key;
+      } else if (type === "bannerImage") bannerImage = key;
       else {
-        uploadedImages.push(uniqueFileName);
+        uploadedImages.push(key);
       }
-    }
+    });
 
     sequelize
       .transaction(async () => {
@@ -144,9 +166,10 @@ const editEvent = async (req, res) => {
 
     const prevImages = [];
     for (const image of prevFiles) {
-      const timestamp = `${image.split("-")[0]}-`;
+      const imageTimestamp = `${image.split("/")[2].split("-")[0]}-`;
       const imageNameWithoutTimestamp = image
-        .replace(new RegExp(timestamp, "gi"), "")
+        .replace(new RegExp(imageTimestamp, "gi"), "")
+        .split("/")[2]
         .split(".")[0];
       prevImages.push(imageNameWithoutTimestamp);
     }
@@ -159,7 +182,7 @@ const editEvent = async (req, res) => {
     }
 
     for (const file of files) {
-      const fileName = file.originalname.split(".")[0];
+      const fileName = file.originalname.split(".")[0].toLowerCase();
       const count = imagesCount.get(fileName);
       if (count === undefined || count === null) newImages.push(fileName);
       if (count !== undefined) imagesCount.set(fileName, count + 1);
@@ -172,9 +195,10 @@ const editEvent = async (req, res) => {
 
     for (const [image, count] of imagesCount) {
       for (const prevImage of prevFiles) {
-        const timestamp = `${prevImage.split("-")[0]}-`;
+        const timestamp = `${prevImage.split("/")[2].split("-")[0]}-`;
         const imageNameWithoutTimestamp = prevImage
           .replace(new RegExp(timestamp, "gi"), "")
+          .split("/")[2]
           .split(".")[0];
         if (image === imageNameWithoutTimestamp) {
           if (count === 0) {
@@ -186,14 +210,6 @@ const editEvent = async (req, res) => {
       }
     }
 
-    const s3 = new S3Client({
-      region: process.env.S3_REGION,
-      credentials: {
-        accessKeyId: process.env.S3_USER_ACCESS_ID,
-        secretAccessKey: process.env.S3_USER_SECRET_ACCESS_KEY,
-      },
-    });
-
     for (const image of deletedImages) {
       const uploadParams = {
         Bucket: process.env.S3_BUCKET_NAME,
@@ -202,31 +218,38 @@ const editEvent = async (req, res) => {
       await s3.send(new DeleteObjectCommand(uploadParams));
     }
 
-    for (const image of newImages) {
-      const file = files.filter(
-        (data) => data.originalname.split(".")[0] === image
-      )[0];
+    const imageUploadPromises = files.map(async (file) => {
+      const fileType =
+        file.fieldname === "mainImage"
+          ? "main"
+          : file.fieldname === "bannerImage"
+          ? "banner"
+          : "gallery";
 
-      const uniqueFileName = `${req.user.userId}/${Date.now()}-${
-        file.originalname.split(".")[0]
-      }.webp`;
+      const s3Key = generateS3Key(req.user.userId, fileType, file.originalname);
 
       const uploadParams = {
         Bucket: process.env.S3_BUCKET_NAME,
-        Key: uniqueFileName,
+        Key: s3Key,
         Body: await sharp(file.buffer).webp({ quality: 80 }).toBuffer(),
         ContentType: "image/webp",
       };
 
       await s3.send(new PutObjectCommand(uploadParams));
-      if (file.fieldname === "mainImage") {
-        mainImageFileName = uniqueFileName;
-      } else if (file.fieldname === "bannerImage")
-        bannerImageFileName = uniqueFileName;
+      return { type: file.fieldname, key: s3Key };
+    });
+
+    const uploadResult = await Promise.all(imageUploadPromises);
+
+    uploadResult.forEach(({ type, key }) => {
+      if (type === "mainImage") {
+        mainImageFileName = key;
+      } else if (type === "bannerImage") bannerImageFileName = key;
       else {
-        uploadedImages.push(uniqueFileName);
+        uploadedImages.push(key);
       }
-    }
+    });
+
     sequelize
       .transaction(async () => {
         await Venue.update(

@@ -22,8 +22,8 @@ const validateEvent = (req, res, next) => {
       country,
     } = JSON.parse(JSON.parse(req.body.venueDetails));
     const galleryImages = req.files.galleryImages;
-    const mainImage = req.files.mainImage[0];
-    const bannerImage = req.files.bannerImage[0];
+    const mainImage = req.files.mainImage;
+    const bannerImage = req.files.bannerImage;
     if (
       !name ||
       !description ||
