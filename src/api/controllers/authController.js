@@ -50,10 +50,11 @@ const generateOtp = async (req, res) => {
 const validateOtp = async (req, res) => {
   try {
     const { phone, otp } = req.body;
-    if (!phone || !otp)
+    if (!phone || !otp) {
       return res
         .status(400)
         .json({ message: "Phone Number and Otp is Required" });
+    }
 
     const otpData = await Otp.findOne({
       where: {
@@ -62,12 +63,16 @@ const validateOtp = async (req, res) => {
         isUsed: false,
       },
     });
-    if (!otpData) return res.status(404).json({ message: "Invalid OTP" });
+
+    if (!otpData) {
+      return res.status(404).json({ message: "Invalid OTP" });
+    }
 
     const otpExpired =
-      new Date().getTime() < new Date(otpData.expiresAt).getTime();
-
-    if (!otpExpired) return res.status(400).json({ message: "OTP Expired" });
+      new Date().getTime() > new Date(otpData.expiresAt).getTime();
+    if (otpExpired) {
+      return res.status(400).json({ message: "OTP Expired" });
+    }
 
     const jwtSecret = process.env.JWT_SECRET;
 
@@ -78,34 +83,58 @@ const validateOtp = async (req, res) => {
         phone: req.user.phone,
       },
       jwtSecret,
-      {
-        expiresIn: "1h",
-      }
+      { expiresIn: "1h" }
     );
 
-    const refresh_token = jwt.sign({ ...req.user }, jwtSecret, {
+    const refresh_token = jwt.sign({ userId: req.user.userId }, jwtSecret, {
       expiresIn: "30d",
     });
 
-    res.status(200).json({
-      message: "User Authenticated",
-      access_token,
-      refresh_token,
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
+
+    res.cookie("access_token", access_token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 1000,
+    });
+
+    res.cookie("refresh_token", refresh_token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    await otpData.update({ isUsed: true });
+
+    return res.status(200).json({
+      success: true,
+      message: "User authenticated successfully",
+      debug: {
+        cookiesSet: {
+          access: true,
+          refresh: true,
+        },
+      },
     });
   } catch (error) {
-    console.error(error);
+    console.error("Authentication error:", error);
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
     return res.status(500).json({ message: error.message });
   }
 };
 
 const generateRefreshToken = async (req, res) => {
   try {
-    const refresh_token = req.headers.authorization.split(" ")[1];
+    const refresh_token = req.cookies.refresh_token;
     if (!refresh_token)
       return res.status(401).json({ message: "No refresh token provided" });
-    const user = jwt.decode(refresh_token, process.env.JWT_SECRET);
-    if (user.exp < Date.now() / 1000)
-      return res.status(401).json({ message: "Refresh token has expired" });
+    const user = jwt.verify(refresh_token, process.env.JWT_SECRET);
     const token = jwt.sign(
       { userId: user.userId, userRoleId: user.userRoleId, phone: user.phone },
       process.env.JWT_SECRET,
@@ -113,11 +142,18 @@ const generateRefreshToken = async (req, res) => {
         expiresIn: "1h",
       }
     );
-    return res
-      .status(200)
-      .json({ message: "Token retrieval success", access_token: token });
+    res.cookie("access_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 1000,
+      path: "/",
+    });
+    return res.status(200).json({ message: "Token retrieval success" });
   } catch (error) {
     console.error(error);
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
     return res.status(500).json({ message: error.message });
   }
 };

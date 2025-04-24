@@ -13,7 +13,7 @@ const rateLimiter = rateLimit({
   max: 3,
 });
 
-router.use(rateLimiter);
+// router.use(rateLimiter);
 
 router.route("/generate-otp").post(checkIfUserExists, generateOtp);
 
