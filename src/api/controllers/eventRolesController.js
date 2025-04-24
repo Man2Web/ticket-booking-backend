@@ -2,7 +2,7 @@ const { Op } = require("sequelize");
 const Role = require("../modals/roles");
 const User = require("../modals/users");
 const EventUserRole = require("../modals/eventUserRoles");
-const { nanoid } = require("nanoid");
+const { v4: uuidv4 } = require("uuid");
 
 const getAvailableRoles = async (req, res) => {
   try {
@@ -50,7 +50,7 @@ const assignStaff = async (req, res) => {
     if (!roleExists)
       return res.status(404).json({ message: "Role Does Not Exist" });
 
-    const token = nanoid();
+    const token = uuidv4();
 
     await EventUserRole.create({
       userId: userExists.dataValues.userId,

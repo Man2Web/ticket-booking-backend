@@ -4395,11 +4395,6 @@ multer@^1.4.5-lts.2:
     type-is "^1.6.4"
     xtend "^4.0.0"
 
-nanoid@^5.1.5:
-  version "5.1.5"
-  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-5.1.5.tgz#f7597f9d9054eb4da9548cdd53ca70f1790e87de"
-  integrity sha512-Ir/+ZpE9fDsNH0hQ3C68uyThDXzYcim2EqcZ8zn8Chtt1iylPT9xXJB0kPCnqzgcEGikO9RxSrh63MsmVCU7Fw==
-
 natural-compare@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
@@ -5605,6 +5600,11 @@ uuid@8.3.2, uuid@^8.3.2:
   version "8.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
+
+uuid@^11.1.0:
+  version "11.1.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-11.1.0.tgz#9549028be1753bb934fc96e2bca09bb4105ae912"
+  integrity sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==
 
 uuid@^9.0.1:
   version "9.0.1"
