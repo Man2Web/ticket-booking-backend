@@ -1,4 +1,3 @@
-const sharp = require("sharp");
 const { sequelize } = require("../config/db.config");
 const {
   S3Client,
@@ -7,7 +6,9 @@ const {
 } = require("@aws-sdk/client-s3");
 const Event = require("../modals/events");
 const Venue = require("../modals/venues");
-const { generateS3Key } = require("../services/eventServices");
+const { generateS3Key, processImage } = require("../services/eventServices");
+
+process.env.UV_THREADPOOL_SIZE = 10;
 
 const s3 = new S3Client({
   region: process.env.S3_REGION,
@@ -18,6 +19,7 @@ const s3 = new S3Client({
 });
 
 const addEvent = async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
     const {
       name,
@@ -39,6 +41,38 @@ const addEvent = async (req, res) => {
       zip,
       country,
     } = JSON.parse(JSON.parse(req.body.venueDetails));
+
+    const venueDetails = await Venue.create(
+      {
+        name: venueName,
+        address,
+        city,
+        state,
+        zip,
+        country,
+      },
+      { transaction }
+    );
+
+    const event = await Event.create(
+      {
+        adminId: req.user.userId,
+        venueId: venueDetails.dataValues.venueId,
+        name,
+        description,
+        startDate,
+        endDate,
+        bookingDate,
+        isOnline,
+        category,
+        galleryImages: [],
+        mainImage: "",
+        bannerImage: "",
+        faq: JSON.parse(JSON.parse(faq)),
+        termsAndConditions: Array(termsAndConditions),
+      },
+      { transaction }
+    );
 
     const files = [
       ...req.files.galleryImages,
@@ -62,12 +96,18 @@ const addEvent = async (req, res) => {
           ? "banner"
           : "gallery";
 
-      const s3Key = generateS3Key(req.user.userId, fileType, file.originalname);
+      const s3Key = generateS3Key(
+        req.user.userId,
+        event.eventId,
+        fileType,
+        file.originalname
+      );
 
       const uploadParams = {
         Bucket: process.env.S3_BUCKET_NAME,
         Key: s3Key,
-        Body: await sharp(file.buffer).webp({ quality: 80 }).toBuffer(),
+        Body: await processImage(file.buffer, fileType),
+        // Body: await sharp(file.buffer).webp({ quality: 80 }).toBuffer(),
         ContentType: "image/webp",
       };
 
@@ -90,41 +130,23 @@ const addEvent = async (req, res) => {
       }
     });
 
-    sequelize
-      .transaction(async () => {
-        const venueDetails = await Venue.create({
-          name: venueName,
-          address,
-          city,
-          state,
-          zip,
-          country,
-        });
+    await Event.update(
+      {
+        galleryImages: uploadedImages,
+        mainImage,
+        bannerImage,
+      },
+      {
+        where: { eventId: event.eventId },
+        transaction,
+      }
+    );
 
-        await Event.create({
-          adminId: req.user.userId,
-          venueId: venueDetails.dataValues.venueId,
-          name,
-          description,
-          startDate,
-          endDate,
-          bookingDate,
-          isOnline,
-          category,
-          galleryImages: uploadedImages,
-          mainImage: mainImage,
-          bannerImage: bannerImage,
-          faq: JSON.parse(JSON.parse(faq)),
-          termsAndConditions: Array(termsAndConditions),
-        });
-      })
-      .catch((error) => {
-        console.error(error);
-        return res.status(400).json({ message: error.message });
-      });
+    await transaction.commit();
 
     return res.status(200).json({ message: "Event Created Successfully" });
   } catch (error) {
+    await transaction.rollback();
     console.error(error);
     return res.status(500).json({ message: error.message });
   }
@@ -166,10 +188,10 @@ const editEvent = async (req, res) => {
 
     const prevImages = [];
     for (const image of prevFiles) {
-      const imageTimestamp = `${image.split("/")[2].split("-")[0]}-`;
+      const imageTimestamp = `${image.split("/")[3].split("-")[0]}-`;
       const imageNameWithoutTimestamp = image
         .replace(new RegExp(imageTimestamp, "gi"), "")
-        .split("/")[2]
+        .split("/")[3]
         .split(".")[0];
       prevImages.push(imageNameWithoutTimestamp);
     }
@@ -231,7 +253,7 @@ const editEvent = async (req, res) => {
       const uploadParams = {
         Bucket: process.env.S3_BUCKET_NAME,
         Key: s3Key,
-        Body: await sharp(file.buffer).webp({ quality: 80 }).toBuffer(),
+        Body: await processImage(file.buffer, fileType),
         ContentType: "image/webp",
       };
 

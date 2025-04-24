@@ -20,7 +20,7 @@ router.use(validateUserIsAdmin);
 
 router.route("/create").post(
   upload.fields([
-    { name: "galleryImages", maxCount: 5 },
+    { name: "galleryImages", minCount: 5, maxCount: 10 },
     { name: "mainImage", maxCount: 1 },
     { name: "bannerImage", maxCount: 1 },
   ]),
@@ -30,7 +30,7 @@ router.route("/create").post(
 
 router.route("/:eventId/edit").post(
   upload.fields([
-    { name: "galleryImages", maxCount: 5 },
+    { name: "galleryImages", minCount: 5, maxCount: 10 },
     { name: "mainImage", maxCount: 1 },
     { name: "bannerImage", maxCount: 1 },
   ]),
