@@ -2,6 +2,7 @@ const express = require("express");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 require("dotenv").config();
 
@@ -14,6 +15,7 @@ const eventRoutes = require("./api/routes/eventRoutes");
 const eventRolesRoutes = require("./api/routes/eventRolesRoutes");
 const ticketRoutes = require("./api/routes/ticketRoutes");
 const couponRoutes = require("./api/routes/couponRoutes");
+const bookingRoutes = require("./api/routes/bookingRoutes");
 // const dbAssociations = require("./api/config/db.associationsConfig");
 const initializeDbConfig = require("./api/config/db.initializeConfig");
 
@@ -23,10 +25,12 @@ app.use(morgan("dev"));
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/auth", authRoutes);
 app.use("/events/:eventId/tickets", ticketRoutes);
 app.use("/events/:eventId/coupons", couponRoutes);
+app.use("/events/:eventId/:ticketId/booking", bookingRoutes);
 app.use("/events", eventRoutes);
 app.use("/event-staff", eventRolesRoutes);
 app.use("/services", serviceRoutes);

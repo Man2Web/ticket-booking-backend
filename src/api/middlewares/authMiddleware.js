@@ -39,7 +39,7 @@ async function checkIfUserExists(req, res, next) {
 
 async function validateUserIsAdmin(req, res, next) {
   try {
-    const token = req.headers.authorization.split(" ")[1];
+    const token = req.cookies?.access_token;
     if (!token) return res.status(401).json({ message: "Access Denied" });
     const user = jwt.decode(token, process.env.JWT_SECRET);
     if (user.exp < Date.now() / 1000) {
@@ -76,4 +76,29 @@ async function validateUserIsAdmin(req, res, next) {
   }
 }
 
-module.exports = { checkIfUserExists, validateUserIsAdmin };
+async function validateUser(req, res, next) {
+  try {
+    const access_token = req.cookies?.access_token;
+
+    if (!access_token) {
+      return res.status(401).json({
+        success: false,
+        message: "Access token not found",
+      });
+    }
+    const user = jwt.verify(access_token, process.env.JWT_SECRET);
+
+    const userData = await User.findByPk(user.userId);
+
+    if (!userData)
+      return res.status(401).json({ message: "Invalid User Booking Request" });
+
+    req.user = userData.dataValues;
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+}
+
+module.exports = { checkIfUserExists, validateUserIsAdmin, validateUser };

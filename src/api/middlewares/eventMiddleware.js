@@ -92,4 +92,31 @@ const isEventOwner = async (req, res, next) => {
   }
 };
 
-module.exports = { validateEvent, isEventOwner };
+const validateEventExists = async (req, res, next) => {
+  try {
+    const { eventId } = req.params;
+    if (!eventId)
+      return res.status(404).json({ message: "Event Id is not defined" });
+
+    const eventData = await Event.findByPk(eventId);
+
+    if (!eventData) return res.status(404).json({ message: "Invalid Event" });
+
+    const now = new Date().toISOString();
+
+    if (
+      now > new Date(eventData.bookingDate) ||
+      now > new Date(eventData.endDate)
+    )
+      return res.status(404).json({ message: "Invalid Booking Out of Range" });
+
+    req.event = eventData.dataValues;
+
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { validateEvent, isEventOwner, validateEventExists };

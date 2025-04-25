@@ -58,7 +58,7 @@ const assignStaff = async (req, res) => {
       eventId,
       invitationToken: token,
     });
-    const magicLink = `http://${process.env.URL}/event-staff/invitations/${token}`;
+    const magicLink = `${process.env.URL}/event-staff/invitations/${token}`;
 
     return res
       .status(200)
