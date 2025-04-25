@@ -5,6 +5,7 @@ const {
   addEvent,
   editEvent,
   getEvent,
+  getEventsByLocation,
 } = require("../controllers/eventController");
 const { validateUserIsAdmin } = require("../middlewares/authMiddleware");
 const {
@@ -15,6 +16,8 @@ const {
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.route("/:eventId").get(getEvent);
+
+router.route("/:location").get(getEventsByLocation);
 
 router.use(validateUserIsAdmin);
 

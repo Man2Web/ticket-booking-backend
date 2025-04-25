@@ -1,4 +1,5 @@
 const { sequelize } = require("../config/db.config");
+const { Op } = require("sequelize");
 const {
   S3Client,
   PutObjectCommand,
@@ -31,6 +32,8 @@ const addEvent = async (req, res) => {
       isOnline,
       faq,
       termsAndConditions,
+      eventParticipants,
+      eventGuide,
     } = req.body;
 
     const {
@@ -70,6 +73,8 @@ const addEvent = async (req, res) => {
         bannerImage: "",
         faq: JSON.parse(JSON.parse(faq)),
         termsAndConditions: Array(termsAndConditions),
+        eventParticipants: JSON.parse(eventParticipants),
+        eventGuide: JSON.parse(eventGuide),
       },
       { transaction }
     );
@@ -164,6 +169,8 @@ const editEvent = async (req, res) => {
       isOnline,
       faq,
       termsAndConditions,
+      eventParticipants,
+      eventGuide,
     } = req.body;
 
     const {
@@ -304,6 +311,8 @@ const editEvent = async (req, res) => {
             bannerImage: bannerImageFileName,
             faq: JSON.parse(JSON.parse(faq)),
             termsAndConditions: Array(termsAndConditions),
+            eventParticipants: JSON.parse(eventParticipants),
+            eventGuide: JSON.parse(eventGuide),
           },
           {
             where: {
@@ -337,4 +346,64 @@ const getEvent = async (req, res) => {
   }
 };
 
-module.exports = { addEvent, editEvent, getEvent };
+const getEventsByLocation = async (req, res) => {
+  try {
+    const { location } = req.params;
+
+    if (!location) {
+      return res.status(400).json({
+        message: "Location parameter is required",
+      });
+    }
+
+    const events = await Event.findAll({
+      include: [
+        {
+          model: Venue,
+          as: "venue",
+          where: {
+            [Op.or]: [
+              { city: { [Op.iLike]: `%${location}%` } },
+              { state: { [Op.iLike]: `%${location}%` } },
+              { country: { [Op.iLike]: `%${location}%` } },
+            ],
+          },
+          attributes: ["name", "address", "city", "state", "country", "zip"],
+        },
+      ],
+      where: {
+        endDate: {
+          [Op.gte]: new Date(),
+        },
+      },
+      attributes: [
+        "eventId",
+        "name",
+        "description",
+        "startDate",
+        "endDate",
+        "bookingDate",
+        "category",
+        "mainImage",
+        "bannerImage",
+        "isOnline",
+      ],
+      order: [["startDate", "ASC"]],
+    });
+
+    if (!events.length) {
+      return res.status(404).json({
+        message: `No events found in location: ${location}`,
+      });
+    }
+
+    return res.status(200).json({
+      events,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { addEvent, editEvent, getEvent, getEventsByLocation };

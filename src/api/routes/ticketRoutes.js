@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const { validateUserIsAdmin } = require("../middlewares/authMiddleware");
+const {
+  validateUserIsAdmin,
+  validateUser,
+} = require("../middlewares/authMiddleware");
 const { isEventOwner } = require("../middlewares/eventMiddleware");
 const {
   createTicket,
@@ -9,6 +12,8 @@ const {
   deleteTicket,
 } = require("../controllers/ticketController");
 const { validateTicket } = require("../middlewares/ticketMiddleware");
+
+router.use(validateUser);
 
 router.route("/").get(getTickets);
 

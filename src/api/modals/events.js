@@ -87,6 +87,16 @@ const Event = sequelize.define(
       allowNull: false,
       field: "faq",
     },
+    eventParticipants: {
+      type: DataTypes.JSONB(),
+      allowNull: false,
+      field: "event_participants",
+    },
+    eventGuide: {
+      type: DataTypes.JSONB(),
+      allowNull: false,
+      field: "event_guide",
+    },
     termsAndConditions: {
       type: DataTypes.ARRAY(DataTypes.TEXT),
       allowNull: false,
