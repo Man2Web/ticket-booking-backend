@@ -76,6 +76,47 @@ async function validateUserIsAdmin(req, res, next) {
   }
 }
 
+async function validateUserIsSuperAdmin(req, res, next) {
+  try {
+    const token = req.cookies?.access_token;
+    if (!token) return res.status(401).json({ message: "Access Denied" });
+    const user = jwt.decode(token, process.env.JWT_SECRET);
+    if (user.exp < Date.now() / 1000) {
+      return res.status(401).json({ message: "Token Expired" });
+    }
+    const isAdmin = await UserRole.findOne({
+      where: {
+        userId: user.userId,
+      },
+      include: [
+        {
+          model: Role,
+          where: {
+            roleName: "SUPER_ADMIN",
+          },
+        },
+        {
+          model: User,
+        },
+      ],
+    });
+    if (
+      !isAdmin ||
+      !isAdmin.dataValues ||
+      !isAdmin.dataValues.User ||
+      !isAdmin.dataValues.Role
+    )
+      return res.status(401).json({ message: "User is not super admin" });
+    req.user = isAdmin.dataValues.User.dataValues;
+    next();
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(401)
+      .json({ message: "Error validating user super admin" });
+  }
+}
+
 async function validateUser(req, res, next) {
   try {
     const access_token = req.cookies?.access_token;
@@ -101,4 +142,9 @@ async function validateUser(req, res, next) {
   }
 }
 
-module.exports = { checkIfUserExists, validateUserIsAdmin, validateUser };
+module.exports = {
+  checkIfUserExists,
+  validateUserIsAdmin,
+  validateUser,
+  validateUserIsSuperAdmin,
+};

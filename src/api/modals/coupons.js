@@ -1,6 +1,5 @@
 const { DataTypes, Sequelize } = require("sequelize");
 const { sequelize } = require("../config/db.config");
-const Ticket = require("./tickets");
 
 const Coupon = sequelize.define(
   "Coupon",
@@ -25,10 +24,10 @@ const Coupon = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: "tickets",
-        key: "ticket_id",
+        model: "event_tickets",
+        key: "event_ticket_id",
       },
-      field: "ticket_id",
+      field: "event_ticket_id",
     },
     couponCode: {
       type: DataTypes.STRING(20),

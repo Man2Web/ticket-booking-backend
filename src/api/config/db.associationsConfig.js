@@ -4,9 +4,10 @@ const User = require("../modals/users");
 const Venue = require("../modals/venues");
 const Event = require("../modals/events");
 const EventUserRole = require("../modals/eventUserRoles");
-const Ticket = require("../modals/tickets");
 const Coupon = require("../modals/coupons");
 const Booking = require("../modals/bookings");
+const EventTickets = require("../modals/eventTickets");
+const Tickets = require("../modals/tickets");
 
 const dbAssociations = () => {
   UserRole.belongsTo(Role, {
@@ -65,7 +66,7 @@ const dbAssociations = () => {
     targetKey: "roleId",
   });
 
-  Ticket.belongsTo(Event, {
+  EventTickets.belongsTo(Event, {
     foreignKey: "eventId",
     targetKey: "eventId",
   });
@@ -75,9 +76,9 @@ const dbAssociations = () => {
     targetKey: "eventId",
   });
 
-  Coupon.belongsTo(Ticket, {
-    foreignKey: "ticketId",
-    targetKey: "ticketId",
+  Coupon.belongsTo(EventTickets, {
+    foreignKey: "eventTicketId",
+    targetKey: "eventTicketId",
   });
 
   Booking.belongsTo(User, {
@@ -85,9 +86,19 @@ const dbAssociations = () => {
     targetKey: "userId",
   });
 
-  Booking.belongsTo(Ticket, {
-    foreignKey: "ticketId",
-    targetKey: "ticketId",
+  Booking.belongsTo(EventTickets, {
+    foreignKey: "eventTicketId",
+    targetKey: "eventTicketId",
+  });
+
+  Tickets.belongsTo(Booking, {
+    foreignKey: "bookingId",
+    targetKey: "bookingId",
+  });
+
+  Tickets.belongsTo(User, {
+    foreignKey: "userId",
+    targetKey: "userId",
   });
 };
 

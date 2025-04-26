@@ -7,6 +7,7 @@ const {
   getAvailableRoles,
   assignStaff,
   removeStaff,
+  getAvailableRolesForEvent,
 } = require("../controllers/eventRolesController");
 
 router.route("/invitations/:token").get(acceptInvitation);
@@ -15,8 +16,12 @@ router.use(validateUserIsAdmin);
 
 router.route("/roles").get(getAvailableRoles);
 
-router.route("/:eventId/staff").post(isEventOwner, assignStaff);
+router.use(isEventOwner);
 
-router.route("/:eventId/staff/:userRoleId").delete(isEventOwner, removeStaff);
+router.route("/roles/:eventId").get(getAvailableRolesForEvent);
+
+router.route("/:eventId/staff").post(assignStaff);
+
+router.route("/:eventId/staff/:userRoleId").delete(removeStaff);
 
 module.exports = router;

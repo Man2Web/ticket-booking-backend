@@ -1,11 +1,11 @@
-const Ticket = require("../modals/tickets");
+const EventTickets = require("../modals/eventTickets");
 
 const createTicket = async (req, res) => {
   try {
     const { eventId } = req.params;
     const { ticketName, price, keyPoints, availableQuantity } = req.body;
 
-    await Ticket.create({
+    await EventTickets.create({
       eventId,
       ticketName,
       price,
@@ -26,12 +26,12 @@ const updateTicket = async (req, res) => {
     const { ticketName, price, availableQuantity, keyPoints, isActive } =
       req.body;
 
-    const existingTicket = await Ticket.findByPk(ticketId);
+    const existingTicket = await EventTickets.findByPk(ticketId);
 
     if (!existingTicket)
       return res.status(404).json({ message: "Ticket Does Not Exist" });
 
-    await Ticket.update(
+    await EventTickets.update(
       {
         ticketName,
         price,
@@ -42,7 +42,7 @@ const updateTicket = async (req, res) => {
       {
         where: {
           eventId,
-          ticketId,
+          eventTicketId,
         },
       }
     );
@@ -67,7 +67,7 @@ const deleteTicket = async (req, res) => {
 const getTickets = async (req, res) => {
   try {
     const { eventId } = req.params;
-    const ticketsData = await Ticket.findAll({
+    const ticketsData = await EventTickets.findAll({
       where: {
         eventId,
       },

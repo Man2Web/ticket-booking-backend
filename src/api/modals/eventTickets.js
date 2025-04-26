@@ -1,23 +1,14 @@
 const { DataTypes, Sequelize } = require("sequelize");
 const { sequelize } = require("../config/db.config");
 
-const Booking = sequelize.define(
-  "Booking",
+const EventTickets = sequelize.define(
+  "EventTickets",
   {
-    bookingId: {
+    eventTicketId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      field: "booking_id",
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: "users",
-        key: "user_id",
-      },
-      allowNull: false,
-      field: "user_id",
+      field: "event_ticket_id",
     },
     eventId: {
       type: DataTypes.INTEGER,
@@ -26,40 +17,40 @@ const Booking = sequelize.define(
         key: "event_id",
       },
       allowNull: false,
+      onDelete: "CASCADE",
       field: "event_id",
     },
-    ticketId: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: "event_tickets",
-        key: "event_ticket_id",
-      },
-      allowNull: false,
-      field: "event_ticket_id",
-    },
-    paymentStatus: {
-      type: DataTypes.ENUM("SUCCESS", "FAILED", "PENDING"),
-      allowNull: false,
-      field: "payment_status",
-    },
-    transactionId: {
+    ticketName: {
       type: DataTypes.STRING(100),
-      unique: true,
       allowNull: false,
-      field: "transaction_id",
+      field: "ticket_name",
     },
-    quantity: {
+    price: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 1,
-      validate: {
-        min: 1,
-      },
+      field: "price",
     },
-    totalAmount: {
-      type: DataTypes.DECIMAL(10, 2),
+    keyPoints: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: false,
-      field: "total_amount",
+      field: "key_points",
+    },
+    availableQuantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      field: "available_quantity",
+    },
+    soldQuantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      field: "sold_quantity",
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+      field: "is_active",
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -76,9 +67,8 @@ const Booking = sequelize.define(
   },
   {
     timestamps: true,
-    tableName: "bookings",
-    underscored: true,
+    tableName: "event_tickets",
   }
 );
 
-module.exports = Booking;
+module.exports = EventTickets;

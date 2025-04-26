@@ -1,56 +1,43 @@
 const { DataTypes, Sequelize } = require("sequelize");
 const { sequelize } = require("../config/db.config");
 
-const Ticket = sequelize.define(
-  "Ticket",
+const Tickets = sequelize.define(
+  "Tickets",
   {
     ticketId: {
-      type: DataTypes.INTEGER,
       primaryKey: true,
+      type: DataTypes.INTEGER,
       autoIncrement: true,
       field: "ticket_id",
     },
-    eventId: {
-      type: DataTypes.INTEGER,
+    bookingId: {
       references: {
-        model: "events",
-        key: "event_id",
+        model: "bookings",
+        key: "booking_id",
       },
-      allowNull: false,
-      onDelete: "CASCADE",
-      field: "event_id",
-    },
-    ticketName: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      field: "ticket_name",
-    },
-    price: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      field: "price",
+      field: "booking_id",
     },
-    keyPoints: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: false,
-      field: "key_points",
-    },
-    availableQuantity: {
+    userId: {
+      references: {
+        model: "users",
+        key: "user_id",
+      },
       type: DataTypes.INTEGER,
       allowNull: false,
-      field: "available_quantity",
+      field: "user_id",
     },
-    soldQuantity: {
-      type: DataTypes.INTEGER,
+    ticketCode: {
+      type: DataTypes.STRING(150),
+      unique: true,
       allowNull: false,
-      defaultValue: 0,
-      field: "sold_quantity",
+      field: "ticket_code",
     },
-    isActive: {
-      type: DataTypes.BOOLEAN,
+    ticketStatus: {
+      type: DataTypes.ENUM("VALID", "SCANNED", "CANCELLED"),
       allowNull: false,
-      defaultValue: true,
-      field: "is_active",
+      field: "ticket_code",
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -66,9 +53,10 @@ const Ticket = sequelize.define(
     },
   },
   {
-    timestamps: true,
     tableName: "tickets",
+    timestamps: true,
+    underscored: true,
   }
 );
 
-module.exports = Ticket;
+module.exports = Tickets;

@@ -1,4 +1,6 @@
 const Role = require("../modals/roles");
+const UserRole = require("../modals/userRoles");
+const User = require("../modals/users");
 const dbAssociations = require("./db.associationsConfig");
 const { sequelize } = require("./db.config");
 
@@ -23,6 +25,25 @@ const initializeDbConfig = async () => {
     await Promise.all(
       defaultRoles.map((role) => Role.upsert(role, { returning: true }))
     );
+
+    const user = await User.findOrCreate({
+      where: {
+        phone: "8790877087",
+      },
+    });
+
+    const role = await Role.findOne({
+      where: {
+        roleName: "SUPER_ADMIN",
+      },
+    });
+
+    await UserRole.findOrCreate({
+      where: {
+        userId: user[0].userId,
+        roleId: role.roleId,
+      },
+    });
   } catch (error) {
     console.error("Database initialization failed:");
     console.error("Error:", {

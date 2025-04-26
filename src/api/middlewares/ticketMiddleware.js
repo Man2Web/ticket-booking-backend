@@ -1,4 +1,4 @@
-const Ticket = require("../modals/tickets");
+const EventTickets = require("../modals/eventTickets");
 
 const validateTicket = async (req, res, next) => {
   try {
@@ -20,7 +20,7 @@ const validateTicketExists = async (req, res, next) => {
     if (!ticketId)
       return res.status(404).json({ message: "Ticket Id is not defined" });
 
-    const ticketData = await Ticket.findByPk(ticketId);
+    const ticketData = await EventTickets.findByPk(ticketId);
 
     if (!ticketData) return res.status(404).json({ message: "Invalid Ticket" });
 

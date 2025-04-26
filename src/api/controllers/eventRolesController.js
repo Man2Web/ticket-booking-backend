@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op, Model } = require("sequelize");
 const Role = require("../modals/roles");
 const User = require("../modals/users");
 const EventUserRole = require("../modals/eventUserRoles");
@@ -21,6 +21,37 @@ const getAvailableRoles = async (req, res) => {
     return res
       .status(200)
       .json({ message: "Fetching Roles Successfull", roles });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const getAvailableRolesForEvent = async (req, res) => {
+  const { eventId } = req.params;
+  try {
+    const eventRolesData = await EventUserRole.findAll({
+      include: [
+        {
+          model: User,
+        },
+        {
+          model: Role,
+        },
+      ],
+      where: {
+        eventId: eventId,
+      },
+    });
+
+    if (!eventRolesData.length)
+      return res
+        .status(404)
+        .json({ message: "No Roles Assigned For This Event" });
+
+    return res
+      .status(200)
+      .json({ message: "Fetching Roles Successfull", eventRolesData });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
@@ -127,4 +158,5 @@ module.exports = {
   getAvailableRoles,
   acceptInvitation,
   removeStaff,
+  getAvailableRolesForEvent,
 };

@@ -16,6 +16,7 @@ const eventRolesRoutes = require("./api/routes/eventRolesRoutes");
 const ticketRoutes = require("./api/routes/ticketRoutes");
 const couponRoutes = require("./api/routes/couponRoutes");
 const bookingRoutes = require("./api/routes/bookingRoutes");
+const adminRoutes = require("./api/routes/adminRoutes");
 // const dbAssociations = require("./api/config/db.associationsConfig");
 const initializeDbConfig = require("./api/config/db.initializeConfig");
 
@@ -34,6 +35,7 @@ app.use("/events/:eventId/:ticketId/booking", bookingRoutes);
 app.use("/events", eventRoutes);
 app.use("/event-staff", eventRolesRoutes);
 app.use("/services", serviceRoutes);
+app.use("/admins", adminRoutes);
 
 app.get("/", (req, res) => {
   res.json({
