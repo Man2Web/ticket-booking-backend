@@ -336,7 +336,12 @@ const editEvent = async (req, res) => {
 const getEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
-    const eventData = await Event.findByPk(eventId);
+    const eventData = await Event.findByPk(eventId, {
+      include: {
+        model: Venue,
+        as: "venue",
+      },
+    });
     if (!eventData) return res.status(404).json({ message: "Invalid Event" });
     return res.status(200).json({ eventData: eventData });
   } catch (error) {
