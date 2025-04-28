@@ -71,10 +71,10 @@ const addEvent = async (req, res) => {
         galleryImages: [],
         mainImage: "",
         bannerImage: "",
-        faq: JSON.parse(JSON.parse(faq)),
-        termsAndConditions: Array(termsAndConditions),
-        eventParticipants: JSON.parse(eventParticipants),
-        eventGuide: JSON.parse(eventGuide),
+        faq: JSON.parse(Array(faq)),
+        termsAndConditions: JSON.parse(Array(termsAndConditions)),
+        eventParticipants: JSON.parse(Array(eventParticipants)),
+        eventGuide: JSON.parse(Array(eventGuide)),
       },
       { transaction }
     );
@@ -112,7 +112,6 @@ const addEvent = async (req, res) => {
         Bucket: process.env.S3_BUCKET_NAME,
         Key: s3Key,
         Body: await processImage(file.buffer, fileType),
-        // Body: await sharp(file.buffer).webp({ quality: 80 }).toBuffer(),
         ContentType: "image/webp",
       };
 
@@ -310,9 +309,9 @@ const editEvent = async (req, res) => {
             mainImage: mainImageFileName,
             bannerImage: bannerImageFileName,
             faq: JSON.parse(JSON.parse(faq)),
-            termsAndConditions: Array(termsAndConditions),
-            eventParticipants: JSON.parse(eventParticipants),
-            eventGuide: JSON.parse(eventGuide),
+            termsAndConditions: JSON.parse(Array(termsAndConditions)),
+            eventParticipants: JSON.parse(Array(eventParticipants)),
+            eventGuide: JSON.parse(Array(eventGuide)),
           },
           {
             where: {
