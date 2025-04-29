@@ -4,6 +4,7 @@ const {
   getAdmin,
   addAdmin,
   removeAdmin,
+  getAllUsers,
 } = require("../controllers/adminController");
 const { validateUserIsSuperAdmin } = require("../middlewares/authMiddleware");
 const router = express();
@@ -11,6 +12,8 @@ const router = express();
 router.use(validateUserIsSuperAdmin);
 
 router.route("/").get(getAllAdmins);
+
+router.route("/users").get(getAllUsers);
 
 router.route("/:userId").get(getAdmin);
 

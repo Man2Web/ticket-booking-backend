@@ -111,6 +111,35 @@ const getAllAdmins = async (req, res) => {
   }
 };
 
+const getAllUsers = async (req, res) => {
+  const { limit, offset } = req.query;
+  try {
+    const { count, rows: users } = await UserRole.findAndCountAll({
+      include: [
+        {
+          model: Role,
+          where: {
+            role_name: {
+              [Op.in]: ["USER"],
+            },
+          },
+          attributes: ["roleName"],
+        },
+        {
+          model: User,
+        },
+      ],
+      limit: Number(limit),
+      offset: Number(offset),
+      order: [["createdAt", "DESC"]],
+    });
+    return res.status(200).json({ users, count });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 const getAdmin = async (req, res) => {
   const { userId } = req.params;
   if (!userId) return res.status(404).json({ message: "User Id Not Found" });
@@ -146,4 +175,4 @@ const getAdmin = async (req, res) => {
   }
 };
 
-module.exports = { addAdmin, getAllAdmins, getAdmin, removeAdmin };
+module.exports = { addAdmin, getAllAdmins, getAdmin, removeAdmin, getAllUsers };
