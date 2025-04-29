@@ -25,7 +25,13 @@ const getAuthToken = async () => {
   }
 };
 
-const initiate = async (authToken, transactionId, amount, event, ticket) => {
+const initiate = async (
+  authToken,
+  transactionId,
+  amount,
+  event,
+  eventTicket
+) => {
   const paymentUrl = process.env.PAYMENT_URL;
   const serverUrl = process.env.URL;
   try {
@@ -36,7 +42,7 @@ const initiate = async (authToken, transactionId, amount, event, ticket) => {
         type: "PG_CHECKOUT",
         message: "MN JEWEL PAYMENT",
         merchantUrls: {
-          redirectUrl: `${serverUrl}/events/${event.eventId}/${ticket.ticketId}/booking/validate/${transactionId}`,
+          redirectUrl: `${serverUrl}/events/${event.eventId}/${eventTicket.eventTicketId}/booking/validate/${transactionId}`,
         },
       },
     });

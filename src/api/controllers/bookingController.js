@@ -1,4 +1,5 @@
 const Booking = require("../modals/bookings");
+const Tickets = require("../modals/tickets");
 const {
   getAuthToken,
   initiate,
@@ -7,16 +8,16 @@ const {
 const { v4: uuidv4 } = require("uuid");
 
 const processBooking = async (req, res) => {
-  const { event, ticket, user } = req;
+  const { event, eventTicket, user } = req;
   const transactionId = uuidv4();
   try {
-    if (ticket.soldQuantity >= ticket.availableQuantity)
+    if (eventTicket.soldQuantity >= eventTicket.availableQuantity)
       return req.status(404).json({ message: "Ticket Sold Out Already" });
 
     await Booking.create({
       userId: user.userId,
       eventId: event.eventId,
-      ticketId: ticket.ticketId,
+      ticketId: eventTicket.eventTicketId,
       transactionId: transactionId,
       quantity: 10, // need to update later
       totalAmount: 100, // need to update later
@@ -31,7 +32,7 @@ const processBooking = async (req, res) => {
       transactionId,
       amount,
       event,
-      ticket
+      eventTicket
     );
 
     return res.status(200).json({
@@ -54,7 +55,7 @@ const validateBooking = async (req, res) => {
     const data = await status(transactionId);
     const { state } = data;
     if (data && state === "COMPLETED") {
-      await Booking.update(
+      const [query, bookingData] = await Booking.update(
         {
           paymentStatus: "SUCCESS",
         },
@@ -62,8 +63,29 @@ const validateBooking = async (req, res) => {
           where: {
             transactionId,
           },
+          returning: true,
         }
       );
+      const { bookingId, eventId, eventTicketId, quantity, userId } =
+        bookingData[0];
+      const alreadyTickets = await Tickets.findAll({
+        where: {
+          bookingId,
+          userId,
+        },
+      });
+
+      if (!alreadyTickets || alreadyTickets.length === 0) {
+        for (let i = 0; i < quantity; i++) {
+          const code = uuidv4();
+          await Tickets.create({
+            bookingId,
+            userId,
+            ticketCode: code,
+            ticketStatus: "VALID",
+          });
+        }
+      }
       return res.status(200).json({ message: "Payment Successful" });
     } else if (data && state === "FAILED") {
       await Booking.update(

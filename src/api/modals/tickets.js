@@ -37,7 +37,7 @@ const Tickets = sequelize.define(
     ticketStatus: {
       type: DataTypes.ENUM("VALID", "SCANNED", "CANCELLED"),
       allowNull: false,
-      field: "ticket_code",
+      field: "ticket_status",
     },
     createdAt: {
       type: DataTypes.DATE,

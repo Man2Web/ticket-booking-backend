@@ -105,6 +105,11 @@ const dbAssociations = () => {
     foreignKey: "event_id",
     as: "eventTickets",
   });
+
+  EventTickets.belongsTo(Event, {
+    foreignKey: "eventId",
+    targetKey: "eventId",
+  });
 };
 
 module.exports = dbAssociations;

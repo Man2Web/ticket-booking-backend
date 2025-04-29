@@ -35,7 +35,7 @@ const validateTicketExists = async (req, res, next) => {
         .status(404)
         .json({ message: "Ticket Does Not Belong To Event" });
 
-    req.ticket = ticketData.dataValues;
+    req.eventTicket = ticketData.dataValues;
 
     next();
   } catch (error) {
