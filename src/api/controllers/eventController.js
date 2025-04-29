@@ -5,9 +5,10 @@ const {
   PutObjectCommand,
   DeleteObjectCommand,
 } = require("@aws-sdk/client-s3");
+const { generateS3Key, processImage } = require("../services/eventServices");
 const Event = require("../modals/events");
 const Venue = require("../modals/venues");
-const { generateS3Key, processImage } = require("../services/eventServices");
+const EventTickets = require("../modals/eventTickets");
 
 process.env.UV_THREADPOOL_SIZE = 10;
 
@@ -34,6 +35,7 @@ const addEvent = async (req, res) => {
       termsAndConditions,
       eventParticipants,
       eventGuide,
+      prohibitedItems,
     } = req.body;
 
     const {
@@ -43,7 +45,7 @@ const addEvent = async (req, res) => {
       state,
       zip,
       country,
-    } = JSON.parse(JSON.parse(req.body.venueDetails));
+    } = JSON.parse(req.body.venueDetails);
 
     const venueDetails = await Venue.create(
       {
@@ -75,6 +77,7 @@ const addEvent = async (req, res) => {
         termsAndConditions: JSON.parse(Array(termsAndConditions)),
         eventParticipants: JSON.parse(Array(eventParticipants)),
         eventGuide: JSON.parse(Array(eventGuide)),
+        prohibitedItems: JSON.parse(Array(prohibitedItems)),
       },
       { transaction }
     );
@@ -179,7 +182,7 @@ const editEvent = async (req, res) => {
       state,
       zip,
       country,
-    } = JSON.parse(JSON.parse(req.body.venueDetails));
+    } = JSON.parse(req.body.venueDetails);
 
     const { adminId, eventId, galleryImages, bannerImage, mainImage, venueId } =
       req.eventDetails;
@@ -312,6 +315,7 @@ const editEvent = async (req, res) => {
             termsAndConditions: JSON.parse(Array(termsAndConditions)),
             eventParticipants: JSON.parse(Array(eventParticipants)),
             eventGuide: JSON.parse(Array(eventGuide)),
+            prohibitedItems: JSON.parse(Array(prohibitedItems)),
           },
           {
             where: {
@@ -337,10 +341,16 @@ const getEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
     const eventData = await Event.findByPk(eventId, {
-      include: {
-        model: Venue,
-        as: "venue",
-      },
+      include: [
+        {
+          model: Venue,
+          as: "venue",
+        },
+        {
+          model: EventTickets,
+          as: "eventTickets",
+        },
+      ],
     });
     if (!eventData) return res.status(404).json({ message: "Invalid Event" });
     return res.status(200).json({ eventData: eventData });
@@ -410,4 +420,29 @@ const getEventsByLocation = async (req, res) => {
   }
 };
 
-module.exports = { addEvent, editEvent, getEvent, getEventsByLocation };
+const getAdminEvents = async (req, res) => {
+  try {
+    const adminId = req.user.userId;
+    if (!adminId) return res.status(404).json({ message: "User Id Required" });
+
+    const eventsData = await Event.findAll({
+      where: {
+        adminId: adminId,
+      },
+      order: [["createdAt", "DESC"]],
+    });
+
+    return res.status(200).json({ eventsData });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  addEvent,
+  editEvent,
+  getEvent,
+  getEventsByLocation,
+  getAdminEvents,
+};

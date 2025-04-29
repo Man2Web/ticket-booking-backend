@@ -102,6 +102,11 @@ const Event = sequelize.define(
       allowNull: false,
       field: "terms_and_conditions",
     },
+    prohibitedItems: {
+      type: DataTypes.ARRAY(DataTypes.TEXT),
+      allowNull: false,
+      field: "prohibited_items",
+    },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,

@@ -6,6 +6,7 @@ const {
   editEvent,
   getEvent,
   getEventsByLocation,
+  getAdminEvents,
 } = require("../controllers/eventController");
 const { validateUserIsAdmin } = require("../middlewares/authMiddleware");
 const {
@@ -24,8 +25,8 @@ router.use(validateUserIsAdmin);
 router.route("/create").post(
   upload.fields([
     { name: "galleryImages", minCount: 5, maxCount: 10 },
-    { name: "mainImage", maxCount: 1 },
-    { name: "bannerImage", maxCount: 1 },
+    { name: "mainImage", minCount: 1, maxCount: 1 },
+    { name: "bannerImage", minCount: 1, maxCount: 1 },
   ]),
   validateEvent,
   addEvent
@@ -34,12 +35,14 @@ router.route("/create").post(
 router.route("/:eventId/edit").post(
   upload.fields([
     { name: "galleryImages", minCount: 5, maxCount: 10 },
-    { name: "mainImage", maxCount: 1 },
-    { name: "bannerImage", maxCount: 1 },
+    { name: "mainImage", minCount: 1, maxCount: 1 },
+    { name: "bannerImage", minCount: 1, maxCount: 1 },
   ]),
   validateEvent,
   isEventOwner,
   editEvent
 );
+
+router.route("/").get(getAdminEvents);
 
 module.exports = router;

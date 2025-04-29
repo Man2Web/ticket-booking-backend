@@ -100,6 +100,11 @@ const dbAssociations = () => {
     foreignKey: "userId",
     targetKey: "userId",
   });
+
+  Event.hasMany(EventTickets, {
+    foreignKey: "event_id",
+    as: "eventTickets",
+  });
 };
 
 module.exports = dbAssociations;

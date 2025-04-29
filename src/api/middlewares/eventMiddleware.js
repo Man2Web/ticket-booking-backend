@@ -20,7 +20,7 @@ const validateEvent = (req, res, next) => {
       state,
       zip,
       country,
-    } = JSON.parse(JSON.parse(req.body.venueDetails));
+    } = JSON.parse(req.body.venueDetails);
     const galleryImages = req.files.galleryImages;
     const mainImage = req.files.mainImage;
     const bannerImage = req.files.bannerImage;
