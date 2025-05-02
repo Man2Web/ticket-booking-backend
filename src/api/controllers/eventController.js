@@ -148,9 +148,7 @@ const addEvent = async (req, res) => {
         transaction,
       }
     );
-
     await transaction.commit();
-
     return res.status(200).json({ message: "Event Created Successfully" });
   } catch (error) {
     await transaction.rollback();
@@ -173,6 +171,7 @@ const editEvent = async (req, res) => {
       termsAndConditions,
       eventParticipants,
       eventGuide,
+      prohibitedItems,
     } = req.body;
 
     const {
@@ -289,57 +288,64 @@ const editEvent = async (req, res) => {
         uploadedImages.push(key);
       }
     });
-
-    sequelize
-      .transaction(async () => {
-        await Venue.update(
-          {
-            name: venueName,
-            address,
-            city,
-            state,
-            zip,
-            country,
+    const transaction = await sequelize.transaction();
+    try {
+      await Venue.update(
+        {
+          name: venueName,
+          address,
+          city,
+          state,
+          zip,
+          country,
+        },
+        {
+          where: {
+            venueId,
           },
-          {
-            where: {
-              venueId,
-            },
-          }
-        );
-
-        await Event.update(
-          {
-            name,
-            description,
-            startDate,
-            endDate,
-            bookingDate,
-            isOnline,
-            category,
-            galleryImages: uploadedImages,
-            mainImage: mainImageFileName,
-            bannerImage: bannerImageFileName,
-            faq: JSON.parse(JSON.parse(faq)),
-            termsAndConditions: JSON.parse(Array(termsAndConditions)),
-            eventParticipants: JSON.parse(Array(eventParticipants)),
-            eventGuide: JSON.parse(Array(eventGuide)),
-            prohibitedItems: JSON.parse(Array(prohibitedItems)),
+          transaction,
+        }
+      );
+      await Event.update(
+        {
+          name,
+          description,
+          startDate,
+          endDate,
+          bookingDate,
+          isOnline,
+          category,
+          galleryImages: uploadedImages,
+          mainImage: mainImageFileName,
+          bannerImage: bannerImageFileName,
+          faq: Array.isArray(faq) ? faq : JSON.parse(faq),
+          termsAndConditions: Array.isArray(termsAndConditions)
+            ? termsAndConditions
+            : JSON.parse(termsAndConditions),
+          eventParticipants: Array.isArray(eventParticipants)
+            ? eventParticipants
+            : JSON.parse(eventParticipants),
+          eventGuide: Array.isArray(eventGuide)
+            ? eventGuide
+            : JSON.parse(eventGuide),
+          prohibitedItems: Array.isArray(prohibitedItems)
+            ? prohibitedItems
+            : JSON.parse(prohibitedItems),
+        },
+        {
+          where: {
+            adminId,
+            eventId,
           },
-          {
-            where: {
-              adminId,
-              eventId,
-            },
-          }
-        );
-      })
-      .catch((error) => {
-        console.error(error);
-        return res.status(400).json({ message: error.message });
-      });
-
-    return res.status(200).json({ message: "Event Updated Successfully" });
+          transaction,
+        }
+      );
+      await transaction.commit();
+      return res.status(200).json({ message: "Event Updated Successfully" });
+    } catch (error) {
+      await transaction.rollback();
+      return res.status(500).json({ message: error.message });
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
