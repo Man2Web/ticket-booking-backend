@@ -61,7 +61,7 @@ const addEvent = async (req, res) => {
 
     const event = await Event.create(
       {
-        adminId: req.user.userId,
+        adminId: 1,
         venueId: venueDetails.dataValues.venueId,
         name,
         description,
@@ -105,7 +105,7 @@ const addEvent = async (req, res) => {
           : "gallery";
 
       const s3Key = generateS3Key(
-        req.user.userId,
+        1,
         event.eventId,
         fileType,
         file.originalname
@@ -213,7 +213,10 @@ const editEvent = async (req, res) => {
     }
 
     for (const file of files) {
-      const fileName = file.originalname.split(".")[0].toLowerCase();
+      const fileName = file.originalname
+        .split(".")[0]
+        .toLowerCase()
+        .replace(/\s+/g, "-");
       const count = imagesCount.get(fileName);
       if (count === undefined || count === null) newImages.push(fileName);
       if (count !== undefined) imagesCount.set(fileName, count + 1);
@@ -226,11 +229,12 @@ const editEvent = async (req, res) => {
 
     for (const [image, count] of imagesCount) {
       for (const prevImage of prevFiles) {
-        const timestamp = `${prevImage.split("/")[2].split("-")[0]}-`;
+        const timestamp = `${prevImage.split("/")[3].split("-")[0]}`;
         const imageNameWithoutTimestamp = prevImage
           .replace(new RegExp(timestamp, "gi"), "")
-          .split("/")[2]
-          .split(".")[0];
+          .split("/")[3]
+          .split(".")[0]
+          .replace(/^[-]+/, "");
         if (image === imageNameWithoutTimestamp) {
           if (count === 0) {
             deletedImages.push(prevImage);
@@ -257,7 +261,12 @@ const editEvent = async (req, res) => {
           ? "banner"
           : "gallery";
 
-      const s3Key = generateS3Key(req.user.userId, fileType, file.originalname);
+      const s3Key = generateS3Key(
+        req.user.userId,
+        req.eventDetails.eventId,
+        fileType,
+        file.originalname
+      );
 
       const uploadParams = {
         Bucket: process.env.S3_BUCKET_NAME,
