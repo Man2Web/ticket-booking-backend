@@ -427,7 +427,7 @@ const getEventsByLocation = async (req, res) => {
     }
 
     return res.status(200).json({
-      events,
+      data: events,
     });
   } catch (error) {
     console.error(error);

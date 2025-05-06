@@ -20,7 +20,7 @@ const Coupon = sequelize.define(
       onDelete: "CASCADE",
       field: "event_id",
     },
-    ticketId: {
+    eventTicketId: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
@@ -102,6 +102,7 @@ const Coupon = sequelize.define(
   },
   {
     timestamps: true,
+    underscored: true,
     tableName: "coupons",
   }
 );

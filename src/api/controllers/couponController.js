@@ -1,3 +1,4 @@
+const { where } = require("sequelize");
 const Coupon = require("../modals/coupons");
 
 const createCoupon = async (req, res) => {
@@ -90,13 +91,30 @@ const getCoupons = async (req, res) => {
       },
       order: [["ticketId", "ASC"]],
     });
-    return res
-      .status(200)
-      .json({ message: "Coupons Retrival Successfull", couponsData });
+    return res.status(200).json({ data: couponsData });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
   }
 };
 
-module.exports = { createCoupon, updateCoupon, getCoupons };
+const getCoupon = async (req, res) => {
+  try {
+    const { eventId, couponId } = req.params;
+    if (!eventId || !couponId)
+      return res
+        .status(404)
+        .json({ message: "Required Parameters Are Missing" });
+    const data = await Coupon.findOne({
+      where: { eventId, couponId },
+    });
+    if (!data)
+      return res.status(400).json({ message: "Coupon Does Not Exist" });
+    return res.status(200).json({ data: data });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { createCoupon, updateCoupon, getCoupons, getCoupon };

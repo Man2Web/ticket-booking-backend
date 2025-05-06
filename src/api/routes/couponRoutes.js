@@ -6,12 +6,15 @@ const {
   createCoupon,
   getCoupons,
   updateCoupon,
+  getCoupon,
 } = require("../controllers/couponController");
 const { validateCoupon } = require("../middlewares/couponMiddleware");
 
 router.route("/").get(getCoupons);
 
 router.use(validateUserIsAdmin);
+
+router.route("/:couponId").get(getCoupon);
 
 router.route("/").post(isEventOwner, validateCoupon, createCoupon);
 
