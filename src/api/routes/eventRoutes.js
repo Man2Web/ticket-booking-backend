@@ -43,6 +43,6 @@ router.route("/:eventId/edit").post(
   editEvent
 );
 
-router.route("/").get(getAdminEvents);
+router.route("/admin/all").get(getAdminEvents);
 
 module.exports = router;

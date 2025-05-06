@@ -444,10 +444,27 @@ const getAdminEvents = async (req, res) => {
       where: {
         adminId: adminId,
       },
+      attributes: [
+        "eventId",
+        "name",
+        "description",
+        "startDate",
+        "endDate",
+        "bookingDate",
+        "category",
+        "isOnline",
+      ],
+      include: [
+        {
+          model: Venue,
+          as: "venue",
+          attributes: ["name", "city", "state", "country"],
+        },
+      ],
       order: [["createdAt", "DESC"]],
     });
 
-    return res.status(200).json({ eventsData });
+    return res.status(200).json({ data: eventsData });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
