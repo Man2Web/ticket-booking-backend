@@ -368,7 +368,7 @@ const getEvent = async (req, res) => {
       ],
     });
     if (!eventData) return res.status(404).json({ message: "Invalid Event" });
-    return res.status(200).json({ eventData: eventData });
+    return res.status(200).json({ data: eventData });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });

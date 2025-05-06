@@ -49,9 +49,7 @@ const getAvailableRolesForEvent = async (req, res) => {
         .status(404)
         .json({ message: "No Roles Assigned For This Event" });
 
-    return res
-      .status(200)
-      .json({ message: "Fetching Roles Successfull", eventRolesData });
+    return res.status(200).json({ data: eventRolesData });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });

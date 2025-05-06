@@ -1,5 +1,7 @@
 const express = require("express");
-const router = express.Router();
+const router = express.Router({
+  mergeParams: true,
+});
 const { validateUserIsAdmin } = require("../middlewares/authMiddleware");
 const { isEventOwner } = require("../middlewares/eventMiddleware");
 const {
@@ -16,12 +18,10 @@ router.use(validateUserIsAdmin);
 
 router.route("/roles").get(getAvailableRoles);
 
-router.use(isEventOwner);
+router.route("/roles/:eventId").get(isEventOwner, getAvailableRolesForEvent);
 
-router.route("/roles/:eventId").get(getAvailableRolesForEvent);
+router.route("/:eventId/staff").post(isEventOwner, assignStaff);
 
-router.route("/:eventId/staff").post(assignStaff);
-
-router.route("/:eventId/staff/:userRoleId").delete(removeStaff);
+router.route("/:eventId/staff/:userRoleId").delete(isEventOwner, removeStaff);
 
 module.exports = router;
