@@ -39,7 +39,15 @@ const createCoupon = async (req, res) => {
 const updateCoupon = async (req, res) => {
   try {
     const { eventId, couponId } = req.params;
+
+    if (!eventId || !couponId) {
+      return res.status(404).json({
+        message: "Event ID and Coupon ID are required",
+      });
+    }
+
     const {
+      couponCode,
       couponName,
       couponDescription,
       discountType,
@@ -51,13 +59,22 @@ const updateCoupon = async (req, res) => {
       isActive,
     } = req.body;
 
-    const existingCoupon = await Coupon.findByPk(couponId);
+    const existingCoupon = await Coupon.findOne({
+      where: {
+        eventId,
+        couponId,
+      },
+    });
 
-    if (!existingCoupon)
-      return res.status(404).json({ message: "Coupon Does Not Exist" });
+    if (!existingCoupon) {
+      return res.status(404).json({
+        message: "Coupon not found for this event",
+      });
+    }
 
     await Coupon.update(
       {
+        couponCode,
         couponName,
         couponDescription,
         discountType,
@@ -75,10 +92,15 @@ const updateCoupon = async (req, res) => {
         },
       }
     );
-    return res.status(200).json({ message: "Coupon Updated Successfully" });
+
+    return res.status(200).json({
+      message: "Coupon updated successfully",
+    });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: error.message });
+    console.error("Update coupon error:", error);
+    return res.status(500).json({
+      message: error.message,
+    });
   }
 };
 
