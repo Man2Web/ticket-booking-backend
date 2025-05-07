@@ -14,7 +14,19 @@ const {
   isEventOwner,
 } = require("../middlewares/eventMiddleware");
 
-const upload = multer({ storage: multer.memoryStorage() });
+// const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(), // Use memory storage for simplicity
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB file size limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Invalid file type"));
+    }
+  },
+});
 
 router.route("/:eventId").get(getEvent);
 
@@ -24,9 +36,9 @@ router.use(validateUserIsAdmin);
 
 router.route("/create").post(
   upload.fields([
-    { name: "galleryImages", minCount: 5, maxCount: 10 },
-    { name: "mainImage", minCount: 1, maxCount: 1 },
-    { name: "bannerImage", minCount: 1, maxCount: 1 },
+    { name: "galleryImages", maxCount: 10 },
+    { name: "mainImage", maxCount: 1 },
+    { name: "bannerImage", maxCount: 1 },
   ]),
   validateEvent,
   addEvent
@@ -34,9 +46,9 @@ router.route("/create").post(
 
 router.route("/:eventId/edit").post(
   upload.fields([
-    { name: "galleryImages", minCount: 5, maxCount: 10 },
-    { name: "mainImage", minCount: 1, maxCount: 1 },
-    { name: "bannerImage", minCount: 1, maxCount: 1 },
+    { name: "galleryImages", maxCount: 10 },
+    { name: "mainImage", maxCount: 1 },
+    { name: "bannerImage", maxCount: 1 },
   ]),
   validateEvent,
   isEventOwner,
