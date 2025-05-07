@@ -10,12 +10,15 @@ const {
   getTickets,
   updateTicket,
   deleteTicket,
+  getTicket,
 } = require("../controllers/ticketController");
 const { validateTicket } = require("../middlewares/ticketMiddleware");
 
 router.use(validateUser);
 
 router.route("/").get(getTickets);
+
+router.route("/:ticketId").get(getTicket);
 
 router.use(validateUserIsAdmin);
 

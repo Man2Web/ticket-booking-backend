@@ -42,7 +42,7 @@ const updateTicket = async (req, res) => {
       {
         where: {
           eventId,
-          eventTicketId,
+          eventTicketId: ticketId,
         },
       }
     );
@@ -80,4 +80,30 @@ const getTickets = async (req, res) => {
   }
 };
 
-module.exports = { createTicket, updateTicket, deleteTicket, getTickets };
+const getTicket = async (req, res) => {
+  try {
+    const { eventId, ticketId } = req.params;
+    if (!eventId || !ticketId)
+      return res
+        .status(404)
+        .json({ message: "Event ID or Ticket ID is missing" });
+    const ticketsData = await EventTickets.findOne({
+      where: {
+        eventId,
+        eventTicketId: ticketId,
+      },
+    });
+    return res.status(200).json({ data: ticketsData });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  createTicket,
+  updateTicket,
+  deleteTicket,
+  getTickets,
+  getTicket,
+};
