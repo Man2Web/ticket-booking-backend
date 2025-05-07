@@ -89,7 +89,7 @@ const getCoupons = async (req, res) => {
       where: {
         eventId,
       },
-      order: [["ticketId", "ASC"]],
+      order: [["couponId", "ASC"]],
     });
     return res.status(200).json({ data: couponsData });
   } catch (error) {

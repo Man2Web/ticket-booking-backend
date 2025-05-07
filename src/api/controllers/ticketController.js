@@ -73,7 +73,7 @@ const getTickets = async (req, res) => {
       },
       order: [["eventTicketId", "ASC"]],
     });
-    return res.status(200).json({ ticketsData });
+    return res.status(200).json({ data: ticketsData });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
