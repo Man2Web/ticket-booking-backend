@@ -11,7 +11,7 @@ const {
   updateTicket,
   deleteTicket,
   getTicket,
-} = require("../controllers/ticketController");
+} = require("../controllers/eventTicketController");
 const { validateTicket } = require("../middlewares/ticketMiddleware");
 
 router.use(validateUser);

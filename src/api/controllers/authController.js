@@ -1,7 +1,7 @@
 const Otp = require("../modals/otps");
 const otpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
-const { Op, Model } = require("sequelize");
+const { Op } = require("sequelize");
 const { sendOtp } = require("../services/authServices");
 const User = require("../modals/users");
 const UserRole = require("../modals/userRoles");
@@ -168,7 +168,6 @@ const getUserDetails = async (req, res) => {
       return res.status(401).json({ message: "No auth token provided" });
     const user = jwt.verify(refresh_token, process.env.JWT_SECRET);
     const userWithRoles = await User.findByPk(user.userId, {
-      // attributes: ["userId", "name", "email", "phone", "createdAt"],
       include: [
         {
           model: UserRole,
