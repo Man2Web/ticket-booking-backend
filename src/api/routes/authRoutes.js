@@ -4,8 +4,12 @@ const {
   generateOtp,
   validateOtp,
   generateRefreshToken,
+  getUserDetails,
 } = require("../controllers/authController");
-const { checkIfUserExists } = require("../middlewares/authMiddleware");
+const {
+  checkIfUserExists,
+  validateUser,
+} = require("../middlewares/authMiddleware");
 const rateLimit = require("express-rate-limit");
 
 const rateLimiter = rateLimit({
@@ -19,6 +23,8 @@ router.route("/generate-otp").post(checkIfUserExists, generateOtp);
 
 router.route("/validate-otp").post(checkIfUserExists, validateOtp);
 
-router.route("/refresh").post(generateRefreshToken);
+router.route("/refresh").post(validateUser, generateRefreshToken);
+
+router.route("/me").get(getUserDetails);
 
 module.exports = router;

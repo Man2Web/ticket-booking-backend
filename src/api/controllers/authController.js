@@ -1,8 +1,11 @@
 const Otp = require("../modals/otps");
 const otpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
-const { Op } = require("sequelize");
+const { Op, Model } = require("sequelize");
 const { sendOtp } = require("../services/authServices");
+const User = require("../modals/users");
+const UserRole = require("../modals/userRoles");
+const Role = require("../modals/roles");
 
 const generateOtp = async (req, res) => {
   try {
@@ -158,4 +161,52 @@ const generateRefreshToken = async (req, res) => {
   }
 };
 
-module.exports = { generateOtp, validateOtp, generateRefreshToken };
+const getUserDetails = async (req, res) => {
+  try {
+    const refresh_token = req.cookies.access_token;
+    if (!refresh_token)
+      return res.status(401).json({ message: "No auth token provided" });
+    const user = jwt.verify(refresh_token, process.env.JWT_SECRET);
+    const userWithRoles = await User.findByPk(user.userId, {
+      // attributes: ["userId", "name", "email", "phone", "createdAt"],
+      include: [
+        {
+          model: UserRole,
+          as: "userRoles",
+          attributes: ["userRoleId"],
+          include: [
+            {
+              model: Role,
+              as: "Role",
+              attributes: ["roleName"],
+            },
+          ],
+        },
+      ],
+    });
+    const formattedResponse = {
+      user: {
+        userId: userWithRoles.userId,
+        name: userWithRoles.name,
+        email: userWithRoles.email,
+        phone: userWithRoles.phone,
+        createdAt: userWithRoles.createdAt,
+      },
+      roles: userWithRoles.userRoles.map((role) => ({
+        userRoleId: role.userRoleId,
+        roleName: role.Role.roleName,
+      })),
+    };
+    return res.status(200).json({ data: formattedResponse });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  generateOtp,
+  validateOtp,
+  generateRefreshToken,
+  getUserDetails,
+};
