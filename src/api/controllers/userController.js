@@ -47,6 +47,34 @@ const getUserDetails = async (req, res) => {
   }
 };
 
+const updateUserDetails = async (req, res) => {
+  const { email, fName, lName } = req.body;
+  try {
+    if (!email || !fName || !lName)
+      return res
+        .status(404)
+        .json({ message: "Required Parameters are missing" });
+    await User.update(
+      {
+        email,
+        fName,
+        lName,
+      },
+      {
+        where: {
+          userId: req.user.userId,
+        },
+      }
+    );
+    return res
+      .status(200)
+      .json({ message: "User details updated successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 const getUserBookings = async (req, res) => {
   const { limit, offset } = req.query;
   if ((!limit, !offset)) {
@@ -75,4 +103,4 @@ const getUserBookings = async (req, res) => {
   }
 };
 
-module.exports = { getUserBookings, getUserDetails };
+module.exports = { getUserBookings, getUserDetails, updateUserDetails };
