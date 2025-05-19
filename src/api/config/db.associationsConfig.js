@@ -91,6 +91,11 @@ const dbAssociations = () => {
     targetKey: "eventTicketId",
   });
 
+  Booking.belongsTo(Event, {
+    foreignKey: "eventId",
+    as: "Event",
+  });
+
   Tickets.belongsTo(Booking, {
     foreignKey: "bookingId",
     targetKey: "bookingId",

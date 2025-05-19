@@ -4,7 +4,6 @@ const {
   generateOtp,
   validateOtp,
   generateRefreshToken,
-  getUserDetails,
 } = require("../controllers/authController");
 const {
   checkIfUserExists,
@@ -24,7 +23,5 @@ router.route("/generate-otp").post(checkIfUserExists, generateOtp);
 router.route("/validate-otp").post(checkIfUserExists, validateOtp);
 
 router.route("/refresh").post(validateUser, generateRefreshToken);
-
-router.route("/me").get(getUserDetails);
 
 module.exports = router;
