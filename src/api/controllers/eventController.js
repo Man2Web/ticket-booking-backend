@@ -61,7 +61,7 @@ const addEvent = async (req, res) => {
 
     const event = await Event.create(
       {
-        adminId: 1,
+        adminId: req.user.userId,
         venueId: venueDetails.dataValues.venueId,
         name,
         description,
