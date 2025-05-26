@@ -29,6 +29,31 @@ const User = sequelize.define(
       unique: true,
       field: "phone",
     },
+    address: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      field: "address",
+    },
+    city: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      field: "city",
+    },
+    pincode: {
+      type: DataTypes.STRING(10),
+      allowNull: false,
+      field: "pincode",
+    },
+    state: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      field: "state",
+    },
+    country: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      field: "country",
+    },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,

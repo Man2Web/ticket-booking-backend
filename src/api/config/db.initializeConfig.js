@@ -26,24 +26,38 @@ const initializeDbConfig = async () => {
       defaultRoles.map((role) => Role.upsert(role, { returning: true }))
     );
 
-    const user = await User.findOrCreate({
+    const [user] = await User.findOrCreate({
       where: {
+        fName: "Oni",
+        lName: "Chan",
+        email: "javvajiharshavardhan.24@gmail.com",
         phone: "8790877087",
+        address: "Ramanapeta 1st line, Koritipadu",
+        city: "guntur",
+        pincode: "522007",
+        state: "andhra pradesh",
+        country: "IN",
       },
     });
 
-    const role = await Role.findOne({
+    // Fetch all required roles in one query
+    const roles = await Role.findAll({
       where: {
-        roleName: "SUPER_ADMIN",
+        roleName: ["SUPER_ADMIN", "ADMIN", "USER"],
       },
     });
 
-    await UserRole.findOrCreate({
-      where: {
-        userId: user[0].userId,
-        roleId: role.roleId,
-      },
-    });
+    // Create user roles in parallel
+    await Promise.all(
+      roles.map((role) =>
+        UserRole.findOrCreate({
+          where: {
+            userId: user.userId,
+            roleId: role.roleId,
+          },
+        })
+      )
+    );
   } catch (error) {
     console.error("Database initialization failed:");
     console.error("Error:", {
