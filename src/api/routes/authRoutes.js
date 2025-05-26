@@ -4,6 +4,7 @@ const {
   generateOtp,
   validateOtp,
   generateRefreshToken,
+  signUpUser,
 } = require("../controllers/authController");
 const {
   checkIfUserExists,
@@ -17,6 +18,8 @@ const rateLimiter = rateLimit({
 });
 
 // router.use(rateLimiter);
+
+router.route("/create-user").post(signUpUser, checkIfUserExists, generateOtp);
 
 router.route("/generate-otp").post(checkIfUserExists, generateOtp);
 

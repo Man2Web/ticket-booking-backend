@@ -3,6 +3,62 @@ const otpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
 const { Op } = require("sequelize");
 const { sendOtp } = require("../services/authServices");
+const User = require("../modals/users");
+
+const signUpUser = async (req, res, next) => {
+  try {
+    const {
+      fName,
+      lName,
+      email,
+      phone,
+      address,
+      city,
+      pincode,
+      state,
+      country,
+    } = req.body;
+    if (
+      !fName ||
+      !lName ||
+      !email ||
+      !phone ||
+      !address ||
+      !city ||
+      !pincode ||
+      !state ||
+      !country
+    )
+      return res
+        .status(404)
+        .json({ message: "Required parameters are missing" });
+
+    const userExists = await User.findOne({
+      where: {
+        phone: phone,
+      },
+    });
+
+    if (userExists)
+      return res.status(404).json({ message: "User already exists" });
+
+    await User.create({
+      fName,
+      lName,
+      email,
+      phone,
+      address,
+      city,
+      pincode,
+      state,
+      country,
+    });
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: message });
+  }
+};
 
 const generateOtp = async (req, res) => {
   try {
@@ -162,4 +218,5 @@ module.exports = {
   generateOtp,
   validateOtp,
   generateRefreshToken,
+  signUpUser,
 };
