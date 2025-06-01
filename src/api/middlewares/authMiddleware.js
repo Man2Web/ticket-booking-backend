@@ -132,7 +132,7 @@ async function validateUser(req, res, next) {
     const userData = await User.findByPk(user.userId);
 
     if (!userData)
-      return res.status(401).json({ message: "Invalid User Booking Request" });
+      return res.status(404).json({ message: "Invalid User Request" });
 
     req.user = userData.dataValues;
     next();

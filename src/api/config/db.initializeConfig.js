@@ -26,18 +26,16 @@ const initializeDbConfig = async () => {
       defaultRoles.map((role) => Role.upsert(role, { returning: true }))
     );
 
-    const [user] = await User.findOrCreate({
-      where: {
-        fName: "Oni",
-        lName: "Chan",
-        email: "javvajiharshavardhan.24@gmail.com",
-        phone: "8790877087",
-        address: "Ramanapeta 1st line, Koritipadu",
-        city: "guntur",
-        pincode: "522007",
-        state: "andhra pradesh",
-        country: "IN",
-      },
+    const [user] = await User.upsert({
+      fName: "Oni",
+      lName: "Chan",
+      email: "javvajiharshavardhan.24@gmail.com",
+      phone: "8790877087",
+      address: "Ramanapeta 1st line, Koritipadu",
+      city: "guntur",
+      pincode: "522007",
+      state: "andhra pradesh",
+      country: "IN",
     });
 
     // Fetch all required roles in one query

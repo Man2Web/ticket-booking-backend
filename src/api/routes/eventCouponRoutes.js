@@ -7,7 +7,7 @@ const {
   getCoupons,
   updateCoupon,
   getCoupon,
-} = require("../controllers/couponController");
+} = require("../controllers/eventCouponController");
 const { validateCoupon } = require("../middlewares/couponMiddleware");
 
 router.route("/").get(getCoupons);

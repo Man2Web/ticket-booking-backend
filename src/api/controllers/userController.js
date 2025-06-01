@@ -4,6 +4,7 @@ const UserRole = require("../modals/userRoles");
 const Role = require("../modals/roles");
 const Booking = require("../modals/bookings");
 const Event = require("../modals/events");
+const { Op } = require("sequelize");
 
 const getUserDetails = async (req, res) => {
   try {
@@ -48,17 +49,33 @@ const getUserDetails = async (req, res) => {
 };
 
 const updateUserDetails = async (req, res) => {
-  const { email, fName, lName } = req.body;
+  const { fName, lName, email, address, city, pincode, state, country } =
+    req.body;
   try {
-    if (!email || !fName || !lName)
+    if (
+      !fName ||
+      !lName ||
+      !email ||
+      !address ||
+      !city ||
+      !pincode ||
+      !state ||
+      !country
+    )
       return res
         .status(404)
-        .json({ message: "Required Parameters are missing" });
+        .json({ message: "Required parameters are missing" });
+
     await User.update(
       {
-        email,
         fName,
         lName,
+        email,
+        address,
+        city,
+        pincode,
+        state,
+        country,
       },
       {
         where: {
