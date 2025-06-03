@@ -31,9 +31,15 @@ const getUserDetails = async (req, res) => {
     const formattedResponse = {
       user: {
         userId: userWithRoles.userId,
-        name: userWithRoles.name,
+        fName: userWithRoles.fName,
+        lName: userWithRoles.lName,
         email: userWithRoles.email,
         phone: userWithRoles.phone,
+        address: userWithRoles.address,
+        city: userWithRoles.city,
+        pincode: userWithRoles.pincode,
+        state: userWithRoles.state,
+        country: userWithRoles.country,
         createdAt: userWithRoles.createdAt,
       },
       roles: userWithRoles.userRoles.map((role) => ({

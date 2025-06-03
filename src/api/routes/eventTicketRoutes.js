@@ -20,6 +20,9 @@ router.route("/").get(getTickets);
 
 router.route("/:ticketId").get(getTicket);
 
+// Here we need to implement the ticket scanning logic
+router.route("/:ticketId/:ticketCode").post();
+
 router.use(validateUserIsAdmin);
 
 router.route("/").post(isEventOwner, validateTicket, createTicket);
